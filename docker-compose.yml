@@ -23,8 +23,8 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
+      MYSQL_DATABASE: FilmWave
+      MYSQL_USER: root
       MYSQL_PASSWORD: root_password
     volumes:
       - dbdata:/var/lib/mysql

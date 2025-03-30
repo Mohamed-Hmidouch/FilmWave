@@ -19,6 +19,12 @@ RUN apt-get update -y && apt-get install -y \
     libxml2-dev \
     curl
 
+
+    # Ajouter à votre Dockerfile:
+RUN apt-get update && apt-get install -y \
+nodejs \
+npm
+
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

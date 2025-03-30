@@ -1,5 +1,5 @@
 <?php
-namespace App\Requests\Users;
+namespace App\Requests\User;
 
 use App\Requests\BaseRequestForm;
 

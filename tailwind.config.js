@@ -5,7 +5,16 @@ module.exports = {
     './resources/**/*.vue',
   ],
   theme: {
-    extend: {},
+    extend: {
+      // tailwind.config.js
+      colors: {
+        'film-red': '#E50914',
+        'film-gray': '#141414',
+        'film-accent': '#E50914'
+      }
+    
+
+    },
   },
   plugins: [],
 }

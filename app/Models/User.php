@@ -49,4 +49,33 @@ class User extends Authenticatable
     }
 
 
+    public function playlists()
+    {
+        return $this->hasMany(Playlist::class);
+    }
+
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function comments()
+{
+    return $this->hasMany(Comment::class);
+}
+
+public function ratings()
+{
+    return $this->hasMany(Rating::class);
+}
+
+public function downloads()
+{
+    return $this->hasMany(Download::class);
+}
 }

@@ -7,8 +7,7 @@ use App\Services\UserService;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\BaseController;
 use App\Requests\User\CreateUserValidator;
-use App\Requests\Users\LoginUserValidator;
-
+use App\Requests\User\LoginUserValidator;
 class AuthController extends BaseController
 {
     public $userService;
@@ -27,7 +26,7 @@ class AuthController extends BaseController
         $user = $this->userService->createUser($createUserValidator->request()->all());
         if ($user instanceof \Illuminate\Contracts\Auth\Authenticatable) {
             Auth::login($user);
-            return $this->successRedirect('admin.dashboard', [], 'Registration successful!');
+            return $this->successRedirect('home', [], 'Registration successful!');
         }
         
         return $this->errorRedirect('register', [], 'Registration failed. Please try again.');
@@ -44,9 +43,29 @@ class AuthController extends BaseController
         $credentials = $loginUserValidator->request()->only('email', 'password');
         
         if (Auth::attempt($credentials)) {
-            return $this->successRedirect('admin.dashboard', [], 'Login successful!');
+            $user = Auth::user();
+            $roles = $user->roles()->get();
+            $role = $roles->isNotEmpty() ? $roles->first()->name : 'user';
+            switch ($role) {
+                case 'admin':
+                    return $this->successRedirect('admin.dashboard', [], 'Login successful!');
+                case 'premiumUser':
+                    return $this->successRedirect('premium.homme', [], 'Login successful!');
+                default:
+                    return $this->successRedirect('user.homme', [], 'Login successful!');
+            }
         }
         
         return $this->errorRedirect('login', [], 'Invalid login credentials');
+    }
+
+    public function logout(Request $request)
+    {
+        // Log out the user
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('home')->with('success', 'You have been logged out successfully.');
     }
 }

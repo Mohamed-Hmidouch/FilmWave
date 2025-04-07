@@ -22,9 +22,9 @@
                     <i class="fas fa-users mr-3"></i>
                     Users
                 </a>
-                <a href="#" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-list mr-3"></i>
-                    Categories
+                <a href="{{ route('admin.tags.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-tags mr-3"></i>
+                    Tags
                 </a>
                 <a href="#" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
                     <i class="fas fa-comments mr-3"></i>

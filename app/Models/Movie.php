@@ -9,7 +9,7 @@ class Movie extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['content_id', 'release_date', 'rating'];
+    protected $fillable = ['title','content_id', 'release_date', 'rating'];
 
     public function content()
     {

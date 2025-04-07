@@ -53,7 +53,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::resource('movies', MovieController::class);
     
     // Tag management
-    Route::resource('tags', TagController::class);
+    // Route::resource('tags', TagController::class);
 
 
     Route::resource('categories', CategorieController::class);
@@ -63,3 +63,5 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     
 
 });
+
+Route::get('admin/tags', [App\Http\Controllers\Admin\TagController::class, 'index'])->name('admin.tags.index');

@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('u_p_i_s', function (Blueprint $table) {
             $table->id();
+            $table->string('upi_id');
+            $table->string('ph_no');
             $table->timestamps();
         });
     }

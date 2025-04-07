@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('episodes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tv_show_id')->constrained('t_v_shows')->onDelete('cascade');
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->integer('duration')->nullable();
+            $table->integer('season_number');
+            $table->integer('episode_number');
+            $table->string('file_path')->nullable();
             $table->timestamps();
         });
     }

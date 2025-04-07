@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('t_v_shows', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('content_id')->constrained()->onDelete('cascade');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->integer('seasons')->nullable();
             $table->timestamps();
         });
     }

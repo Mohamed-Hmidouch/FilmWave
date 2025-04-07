@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('downloads', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('content_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->dateTime('download_date');
+            $table->string('ip_address');
             $table->timestamps();
         });
     }

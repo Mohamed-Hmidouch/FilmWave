@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('status');
             $table->string('payment_method_type');
             $table->unsignedBigInteger('payment_method_id');
+            $table->index(['payment_method_type', 'payment_method_id']);
             $table->timestamps();
         });
     }

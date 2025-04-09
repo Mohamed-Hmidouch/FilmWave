@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cards', function (Blueprint $table) {
-            $table->id();
-            $table->string('card_number');
-            $table->string('expiry_date');
-            $table->string('cvv');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
+        Schema::table('subscriptions', function (Blueprint $table) {
+            $table->string('plan_type')->default('free')->after('price');
         });
     }
 
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cards');
+        Schema::table('subscriptions', function (Blueprint $table) {
+            $table->dropColumn('plan_type');
+        });
     }
 };

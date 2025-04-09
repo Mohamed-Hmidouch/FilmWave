@@ -55,9 +55,9 @@
             </div>
             
             <div class="mt-8">
-                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center transition-colors">
+                <a href="{{ url('/subscribe') }}" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center transition-colors">
                     <i class="fas fa-crown mr-2"></i> Cinema Club Entry
-                </button>
+                </a>
             </div>
         </div>
     </div>

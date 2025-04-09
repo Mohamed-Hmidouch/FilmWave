@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cards', function (Blueprint $table) {
+        Schema::create('content_tag', function (Blueprint $table) {
             $table->id();
-            $table->string('card_number');
-            $table->string('expiry_date');
-            $table->string('cvv');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('content_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tag_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cards');
+        Schema::dropIfExists('content_tag');
     }
 };

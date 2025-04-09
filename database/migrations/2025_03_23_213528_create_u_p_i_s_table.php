@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('upi_id');
             $table->string('ph_no');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

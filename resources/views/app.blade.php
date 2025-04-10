@@ -83,9 +83,6 @@
         <!-- Sidebar Component -->
         @include('partials.sidebar')
 
-        <!-- Main Content -->
-        <!-- Main Content -->
-
         @include('partials.footer')
 
 

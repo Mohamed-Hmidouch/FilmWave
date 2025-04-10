@@ -12,6 +12,7 @@
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "opcodesio/log-viewer": "^3.15",
+        "prettus/l5-repository": "^2.10",
         "stripe/stripe-php": "^17.1"
     },
     "require-dev": {

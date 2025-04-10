@@ -9,6 +9,7 @@ use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Admin\ActorController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MovieController;
+use App\Http\Controllers\Admin\SeriesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,20 +48,19 @@ Route::get('admin/dashboard', [AdminController::class, 'index'])->name('admin.da
 Route::get('user/homme', [UserController::class, 'index'])->name('user.homme');
 
 
-Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
     
     
     // Movie management
-    Route::resource('movies', MovieController::class);
     
     // Tag management
     // Route::resource('tags', TagController::class);
 
-
+    Route::resource('series', SeriesController::class);
     Route::resource('categories', CategorieController::class);
     
     // Actor management
-    Route::resource('actors', ActorController::class);
+    // Route::resource('actors', ActorController::class);
     
 
 });
@@ -73,4 +73,9 @@ Route::get('subscribe', [App\Http\Controllers\SubscriptionController::class, 'sh
 
 Route::get('subscribe/checkout', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout');
 
+Route::get('subscribe/checkout/cancel', [App\Http\Controllers\CheckoutController::class, 'cancel'])->name('checkout.cancel');
+Route::get('subscribe/checkout/success', [App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
+
 Route::post('subscribe/checkout', [App\Http\Controllers\CheckoutController::class, 'process'])->name('subscribe.checkout');
+
+

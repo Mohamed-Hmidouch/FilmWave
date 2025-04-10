@@ -43,19 +43,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [HomeController::class, 'settings'])->name('settings');
 });
 
-Route::get('admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
 Route::get('user/homme', [UserController::class, 'index'])->name('user.homme');
 
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
-    
+    Route::get('dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+
     // Movie management
     
     // Tag management
-    // Route::resource('tags', TagController::class);
-
+    Route::resource('tags', TagController::class);
     Route::resource('series', SeriesController::class);
     Route::resource('categories', CategorieController::class);
     

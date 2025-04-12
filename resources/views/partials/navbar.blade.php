@@ -1,3 +1,4 @@
+<!-- Add Alpine.js library right at the top of the navbar partial -->
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-30 bg-film-dark">
     <div class="px-4 md:px-8 py-3">
         <div class="container mx-auto flex justify-between items-center">
@@ -28,13 +29,47 @@
                     </button>
                 </div>
                 
-                <a href="{{ route('login') }}" class="bg-transparent hover:bg-film-red/20 text-white px-4 py-1 rounded-md border border-film-red transition">
-                    Log In
-                </a>
-                
-                <a href="{{ route('register') }}" class="bg-film-red hover:bg-film-red/90 text-white px-4 py-1 rounded-md transition">
-                    Sign Up
-                </a>
+                @guest
+                    <a href="{{ route('login') }}" class="bg-transparent hover:bg-film-red/20 text-white px-4 py-1 rounded-md border border-film-red transition">
+                        Log In
+                    </a>
+                    
+                    <a href="{{ route('register') }}" class="bg-film-red hover:bg-film-red/90 text-white px-4 py-1 rounded-md transition">
+                        Sign Up
+                    </a>
+                @else
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center space-x-2 text-white hover:text-film-red focus:outline-none">
+                            <span class="text-sm">{{ Auth::user()->name }}</span>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                        <div x-show="open" 
+                             @click.away="open = false" 
+                             x-transition:enter="transition ease-out duration-100" 
+                             x-transition:enter-start="transform opacity-0 scale-95" 
+                             x-transition:enter-end="transform opacity-100 scale-100" 
+                             x-transition:leave="transition ease-in duration-75" 
+                             x-transition:leave-start="transform opacity-100 scale-100" 
+                             x-transition:leave-end="transform opacity-0 scale-95" 
+                             style="display: none;"
+                             class="absolute right-0 mt-2 w-48 bg-film-gray rounded-md shadow-lg z-10">
+                            <div class="py-1">
+                                <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">Profile</a>
+                                <a href="{{ route('settings') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">Settings</a>
+                                <a href="{{ route('my-list') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">My List</a>
+                                <div class="border-t border-gray-700"></div>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">
+                                        Log Out
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @endguest
             </div>
         </div>
     </div>

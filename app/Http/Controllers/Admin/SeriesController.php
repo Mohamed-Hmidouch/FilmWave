@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
+use App\Services\SeriesService;
 use Illuminate\Http\Request;
 
-class SeriesController extends Controller
+class SeriesController extends BaseController
 {
     /**
      * Display a listing of the resource.
      */
+
+    public $SeriesService;
+     public function __construct(SeriesService $SeriesService){
+          $this->SeriesService = $SeriesService;
+     }
     public function index()
     {
         return view('admin.Series');

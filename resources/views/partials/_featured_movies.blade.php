@@ -1,11 +1,11 @@
-<div class="container mx-auto px-4 py-8">
-    <h2 class="text-2xl md:text-4xl font-bold mb-8 text-white flex items-center">
+<div class="container mx-auto py-8">
+    <h2 class="text-2xl md:text-4xl font-bold mb-6 lg:mb-8 text-white flex items-center">
         <span class="border-l-4 border-film-red pl-3 transform skew-x-6">Séries Populaires</span>
         <span class="ml-3 text-sm bg-film-red px-2 py-1 rounded-md transform rotate-2">TOP</span>
     </h2>
     
     <!-- Grille responsive pour affichage horizontal des cartes -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 w-full">
         <!-- Carte 1 -->
         <div class="movie-card bg-film-gray rounded-lg overflow-hidden shadow-xl">
             <div class="relative overflow-hidden group">
@@ -485,6 +485,9 @@
     .movie-card {
         position: relative;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
     
     .movie-card:hover {
@@ -504,6 +507,8 @@
     
     .card-img {
         transition: all 0.8s ease;
+        height: 100%;
+        object-fit: cover;
     }
     
     .card-badge {
@@ -613,5 +618,24 @@
     .movie-card:hover .play-icon-circle {
         transform: translate(-50%, -50%) scale(1);
         opacity: 1;
+    }
+
+    /* Responsive fixes for movie cards */
+    @media (max-width: 640px) {
+        .card-img {
+            height: 220px;
+        }
+    }
+
+    @media (min-width: 641px) and (max-width: 1023px) {
+        .card-img {
+            height: 240px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .card-img {
+            height: 260px;
+        }
     }
 </style>

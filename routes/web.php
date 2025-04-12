@@ -37,7 +37,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:PremiumUser,FreeUser'])->group(function () {
     Route::get('/my-list', [HomeController::class, 'myList'])->name('my-list');
     Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
     Route::get('/settings', [HomeController::class, 'settings'])->name('settings');
@@ -49,7 +49,7 @@ Route::get('user/homme', [UserController::class, 'index'])->name('user.homme');
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
-    Route::get('dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('dashboard', [AdminController::class, 'index'])->name('dashboard');
 
     // Movie management
     
@@ -64,7 +64,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 });
 
-Route::get('admin/tags', [App\Http\Controllers\Admin\TagController::class, 'index'])->name('admin.tags.index');
 
 Route::get('subscribe', [App\Http\Controllers\SubscriptionController::class, 'showSubscriptionPage'])->name('subscribe');
 

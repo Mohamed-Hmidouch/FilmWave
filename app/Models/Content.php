@@ -9,12 +9,20 @@ class Content extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'duration', 'genre'];
+    protected $fillable = [
+        'title',
+        'description',
+        'release_year',
+        'duration',
+        'type',
+        'cover_image',
+        'maturity_rating',
+        'views_count'
+    ];
 
-
-    public function playlists()
+    public function series()
     {
-        return $this->belongsToMany(Playlist::class);
+        return $this->hasOne(Series::class);
     }
 
     public function movie()
@@ -47,6 +55,10 @@ class Content extends Model
         return $this->belongsToMany(Tag::class);
     }
 
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class);
+    }
 
     public function getAverageRatingAttribute()
     {

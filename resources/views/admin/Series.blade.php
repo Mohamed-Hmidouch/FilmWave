@@ -96,7 +96,8 @@
             <!-- Create Series Form -->
             <div class="p-6 bg-white rounded-lg shadow lg:col-span-2">
                 <h2 class="mb-6 text-xl font-semibold text-gray-900">Create New Series</h2>
-                <form action="#" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('admin.series.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
                     <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
                         <!-- Series Title -->
                         <div>

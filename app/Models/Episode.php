@@ -9,10 +9,27 @@ class Episode extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['tv_show_id', 'title', 'description', 'duration', 'season_number', 'episode_number', 'file_path'];
-    
-    public function tvShow()
+    protected $fillable = [
+        'series_id',
+        'title',
+        'description',
+        'season_number',
+        'episode_number',
+        'file_path',
+        'release_date',
+        'views_count'
+    ];    
+
+    public function series()
     {
-        return $this->belongsTo(TVShow::class);
+        return $this->belongsTo(Series::class);
+    }
+
+    /**
+     * Get the episode's video URL
+     */
+    public function getVideoUrlAttribute()
+    {
+        return asset('storage/' . $this->file_path);
     }
 }

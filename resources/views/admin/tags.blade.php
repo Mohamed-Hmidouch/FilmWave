@@ -11,38 +11,7 @@
 <body class="bg-gray-100 min-h-screen">
     <div class="flex min-h-screen">
         <!-- Sidebar placeholder -->
-        <div class="w-64 bg-gray-800 text-white p-4 hidden md:block">
-            <div class="text-2xl font-bold mb-8 pl-2">FilmWave Admin</div>
-            <nav>
-                <ul>
-                    <li class="mb-2">
-                        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                            <i class="fas fa-home mr-3"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="flex items-center p-2 rounded bg-blue-600">
-                            <i class="fas fa-tags mr-3"></i> Gestion des Tags
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                            <i class="fas fa-film mr-3"></i> Films
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                            <i class="fas fa-users mr-3"></i> Utilisateurs
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                            <i class="fas fa-cog mr-3"></i> Paramètres
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+         @include('admin.sidebar')
 
         <!-- Main content -->
         <div class="flex-1 flex flex-col">
@@ -58,8 +27,12 @@
                             <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=Admin+User" alt="Admin User">
-                            <span class="text-gray-700">Admin User</span>
+                            @if(auth()->check())
+                                <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}" alt="{{ auth()->user()->name }}">
+                                <span class="text-gray-700">{{ auth()->user()->name }}</span>
+                            @else
+                                <span class="text-gray-700">Guest</span>
+                            @endif
                         </div>
                     </div>
                 </div>

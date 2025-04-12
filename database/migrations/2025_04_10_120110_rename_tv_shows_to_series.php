@@ -11,12 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('content_playlist', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('content_id')->constrained()->onDelete('cascade');
-    $table->foreignId('playlist_id')->constrained()->onDelete('cascade');
-    $table->timestamps();
-});
+        Schema::rename('t_v_shows', 'series');
     }
 
     /**
@@ -24,6 +19,6 @@ Schema::create('content_playlist', function (Blueprint $table) {
      */
     public function down(): void
     {
-        Schema::dropIfExists('content_playlist');
+        Schema::rename('series', 't_v_shows');
     }
 };

@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\Interfaces\SeriesRepositoryInterface;
 use App\Repositories\SeriesRepositoryRepositoryEloquent;
+use App\Repositories\Interfaces\TagRepositoryInterface;
+use App\Repositories\TagRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -14,6 +16,7 @@ class RepositoryServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(SeriesRepositoryInterface::class, SeriesRepositoryRepositoryEloquent::class);
+        $this->app->bind(TagRepositoryInterface::class, TagRepository::class);
     }
 
     /**

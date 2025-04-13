@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\SeriesRepository;
+use App\Repositories\Interfaces\TagRepositoryInterface;
+use App\Repositories\TagRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,6 +17,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SeriesRepository::class, function ($app) {
             return new SeriesRepository();
         });
+
+        // Lier l'interface TagRepositoryInterface à l'implémentation TagRepository
+        $this->app->bind(TagRepositoryInterface::class, TagRepository::class);
     }
 
     /**

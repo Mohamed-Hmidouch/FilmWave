@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ActorController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MovieController;
 use App\Http\Controllers\Admin\SeriesController;
+use App\Http\Controllers\Admin\CategorieController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Tag management
     Route::resource('tags', TagController::class);
+    Route::post('tags/batch', [TagController::class, 'storeBatch'])->name('tags.batch.store');
+    Route::delete('tags/batch', [TagController::class, 'destroyBatch'])->name('tags.batch.destroy');
+    Route::post('tags/import', [TagController::class, 'import'])->name('tags.import');
+    Route::get('tags/export', [TagController::class, 'export'])->name('tags.export');
+    
     Route::resource('series', SeriesController::class);
     Route::resource('categories', CategorieController::class);
     

@@ -7,6 +7,8 @@
     <title>Gestion des Tags en Lot - FilmWave Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="flex min-h-screen">
@@ -151,99 +153,77 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200" id="tags-container">
-                                <!-- Exemple de données - Serait remplacé par les données réelles de Laravel -->
+                                @forelse ($tags as $tag)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="tag-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" data-id="1">
+                                        <input type="checkbox" class="tag-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" data-id="{{ $tag->id }}">
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">1</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">Action</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">42</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">15/03/2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $tag->id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $tag->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $tag->contents_count ?? 0 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $tag->created_at ? $tag->created_at->format('d/m/Y') : '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        <button class="text-blue-500 hover:text-blue-700 mr-3 edit-tag-btn" data-id="1" data-name="Action">
+                                        <button class="text-blue-500 hover:text-blue-700 mr-3 edit-tag-btn" data-id="{{ $tag->id }}" data-name="{{ $tag->name }}">
                                             <i class="fas fa-edit"></i> Modifier
                                         </button>
-                                        <button class="text-red-500 hover:text-red-700 delete-tag-btn" data-id="1">
+                                        <button class="text-red-500 hover:text-red-700 delete-tag-btn" data-id="{{ $tag->id }}">
                                             <i class="fas fa-trash"></i> Supprimer
                                         </button>
                                     </td>
                                 </tr>
+                                @empty
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="tag-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" data-id="2">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">2</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">Drame</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">38</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">12/03/2023</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        <button class="text-blue-500 hover:text-blue-700 mr-3 edit-tag-btn" data-id="2" data-name="Drame">
-                                            <i class="fas fa-edit"></i> Modifier
-                                        </button>
-                                        <button class="text-red-500 hover:text-red-700 delete-tag-btn" data-id="2">
-                                            <i class="fas fa-trash"></i> Supprimer
-                                        </button>
+                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                        Aucun tag trouvé
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" class="tag-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" data-id="3">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">3</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">Comédie</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">56</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">10/03/2023</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        <button class="text-blue-500 hover:text-blue-700 mr-3 edit-tag-btn" data-id="3" data-name="Comédie">
-                                            <i class="fas fa-edit"></i> Modifier
-                                        </button>
-                                        <button class="text-red-500 hover:text-red-700 delete-tag-btn" data-id="3">
-                                            <i class="fas fa-trash"></i> Supprimer
-                                        </button>
-                                    </td>
-                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                     <!-- Pagination -->
                     <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                        @if($tags->hasPages())
                         <div class="flex-1 flex justify-between sm:hidden">
-                            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                Précédent
-                            </a>
-                            <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                Suivant
-                            </a>
+                            @if($tags->onFirstPage())
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-500 bg-gray-50 cursor-not-allowed">
+                                    Précédent
+                                </span>
+                            @else
+                                <a href="{{ $tags->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Précédent
+                                </a>
+                            @endif
+                            
+                            @if($tags->hasMorePages())
+                                <a href="{{ $tags->nextPageUrl() }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Suivant
+                                </a>
+                            @else
+                                <span class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-500 bg-gray-50 cursor-not-allowed">
+                                    Suivant
+                                </span>
+                            @endif
                         </div>
                         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div>
                                 <p class="text-sm text-gray-700">
-                                    Affichage de <span class="font-medium">1</span> à <span class="font-medium">10</span> sur <span class="font-medium">20</span> résultats
+                                    Affichage de <span class="font-medium">{{ $tags->firstItem() ?? 0 }}</span> à <span class="font-medium">{{ $tags->lastItem() ?? 0 }}</span> sur <span class="font-medium">{{ $tags->total() }}</span> résultats
                                 </p>
                             </div>
                             <div>
-                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                        <span class="sr-only">Précédent</span>
-                                        <i class="fas fa-chevron-left"></i>
-                                    </a>
-                                    <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        1
-                                    </a>
-                                    <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        2
-                                    </a>
-                                    <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        3
-                                    </a>
-                                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                        <span class="sr-only">Suivant</span>
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                </nav>
+                                {{ $tags->links() }}
                             </div>
                         </div>
+                        @else
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Affichage de <span class="font-medium">{{ $tags->count() }}</span> résultats
+                                </p>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -420,13 +400,65 @@
                 btn.addEventListener('click', function() {
                     const tagId = this.dataset.id;
                     const tagName = this.closest('tr').querySelector('td:nth-child(3)').textContent;
+                    const deleteButton = this;
                     
-                    if (confirm(`Êtes-vous sûr de vouloir supprimer le tag "${tagName}" ?`)) {
-                        // Simulation - En production, ceci enverrait une requête AJAX à Laravel
-                        console.log('Suppression du tag ID:', tagId);
-                        this.closest('tr').remove();
-                        showToast('Tag supprimé avec succès');
-                    }
+                    Swal.fire({
+                        title: 'Êtes-vous sûr ?',
+                        text: `Voulez-vous vraiment supprimer le tag "${tagName}" ?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Oui, supprimer',
+                        cancelButtonText: 'Annuler',
+                        focusCancel: true,
+                        width: '25em'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Envoyer une requête AJAX pour supprimer le tag
+                            fetch(`/admin/tags/${tagId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Animation de suppression
+                                    const row = deleteButton.closest('tr');
+                                    row.style.transition = 'opacity 0.5s, transform 0.5s';
+                                    row.style.opacity = '0';
+                                    row.style.transform = 'translateX(20px)';
+                                    
+                                    setTimeout(() => {
+                                        row.remove();
+                                        Swal.fire({
+                                            title: 'Supprimé !',
+                                            text: data.message,
+                                            icon: 'success',
+                                            timer: 1500,
+                                            showConfirmButton: false
+                                        });
+                                    }, 500);
+                                } else {
+                                    Swal.fire({
+                                        title: 'Erreur !',
+                                        text: data.error || 'Une erreur est survenue',
+                                        icon: 'error'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Erreur !',
+                                    text: 'Une erreur est survenue. Veuillez réessayer.',
+                                    icon: 'error'
+                                });
+                            });
+                        }
+                    });
                 });
             });
 
@@ -435,20 +467,98 @@
                 const selectedTags = document.querySelectorAll('.tag-checkbox:checked');
                 const tagIds = Array.from(selectedTags).map(checkbox => checkbox.dataset.id);
                 
-                if (confirm(`Êtes-vous sûr de vouloir supprimer ${tagIds.length} tags ?`)) {
-                    // Simulation - En production, ceci enverrait une requête AJAX à Laravel
-                    console.log('Suppression des tags IDs:', tagIds);
-                    
-                    // Retirer les lignes du tableau
-                    selectedTags.forEach(checkbox => {
-                        checkbox.closest('tr').remove();
-                    });
-                    
-                    // Mettre à jour l'interface
-                    selectAllCheckbox.checked = false;
-                    updateBatchActions();
-                    showToast(`${tagIds.length} tags supprimés avec succès`);
-                }
+                Swal.fire({
+                    title: 'Suppression multiple',
+                    text: `Êtes-vous sûr de vouloir supprimer ${tagIds.length} tag(s) ?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: `Oui, supprimer ${tagIds.length} tag(s)`,
+                    cancelButtonText: 'Annuler',
+                    focusCancel: true,
+                    width: '30em'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Afficher l'indicateur de chargement
+                        Swal.fire({
+                            title: 'Suppression en cours...',
+                            text: 'Veuillez patienter',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        
+                        // Envoyer une requête AJAX pour supprimer les tags en lot
+                        fetch('/admin/tags/batch', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                ids: tagIds
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Animation de suppression
+                                selectedTags.forEach(checkbox => {
+                                    const row = checkbox.closest('tr');
+                                    row.style.transition = 'opacity 0.5s, transform 0.5s';
+                                    row.style.opacity = '0';
+                                    row.style.transform = 'translateX(20px)';
+                                    setTimeout(() => {
+                                        row.remove();
+                                    }, 500);
+                                });
+                                
+                                // Mettre à jour l'interface
+                                selectAllCheckbox.checked = false;
+                                updateBatchActions();
+                                
+                                setTimeout(() => {
+                                    Swal.fire({
+                                        title: 'Supprimé !',
+                                        text: data.message,
+                                        icon: 'success',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                }, 600);
+                                
+                                // Si des erreurs sont présentes
+                                if (data.errors && data.errors.length > 0) {
+                                    setTimeout(() => {
+                                        Swal.fire({
+                                            title: 'Avertissement',
+                                            html: `<p>Certaines opérations ont échoué :</p><ul class="text-left mt-2">${data.errors.map(error => `<li>- ${error}</li>`).join('')}</ul>`,
+                                            icon: 'warning'
+                                        });
+                                    }, 2500);
+                                }
+                            } else {
+                                Swal.fire({
+                                    title: 'Erreur !',
+                                    text: data.error || 'Une erreur est survenue',
+                                    icon: 'error'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Erreur !',
+                                text: 'Une erreur est survenue. Veuillez réessayer.',
+                                icon: 'error'
+                            });
+                        });
+                    }
+                });
             });
 
             // Batch export
@@ -456,9 +566,8 @@
                 const selectedTags = document.querySelectorAll('.tag-checkbox:checked');
                 const tagIds = Array.from(selectedTags).map(checkbox => checkbox.dataset.id);
                 
-                // Simulation - En production, ceci déclencherait l'export depuis Laravel
-                console.log('Export des tags IDs:', tagIds);
-                showToast(`Export des tags lancé`);
+                // Rediriger vers la route d'export avec les IDs sélectionnés
+                window.location.href = '/admin/tags/export?ids=' + tagIds.join(',');
             });
 
             // Search functionality
@@ -478,17 +587,42 @@
 
             // Form submissions
             document.getElementById('tag-form').addEventListener('submit', function(e) {
-                // Dans un environnement réel, le formulaire serait soumis directement à Laravel
-                // Cette partie est pour la démonstration uniquement
                 e.preventDefault();
-                const tagNames = tagsInput.value.split(',').filter(tag => tag.trim() !== '');
+                const tagNames = tagsInput.value;
                 
-                if (tagNames.length > 0) {
-                    console.log('Tags à ajouter:', tagNames);
-                    showToast(`${tagNames.length} tags ajoutés avec succès`);
-                    tagFormContainer.classList.add('hidden');
-                    this.reset();
-                    tagPreview.innerHTML = '';
+                if (tagNames.trim() !== '') {
+                    // Envoyer une requête AJAX pour créer les tags
+                    fetch('/admin/tags/batch', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            tag_names: tagNames
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(data.message);
+                            tagFormContainer.classList.add('hidden');
+                            document.getElementById('tag-form').reset();
+                            tagPreview.innerHTML = '';
+                            // Recharger la page pour afficher les nouveaux tags
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            document.getElementById('tag-error').textContent = data.error || 'Une erreur est survenue';
+                            document.getElementById('tag-error').classList.remove('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('tag-error').textContent = 'Une erreur est survenue. Veuillez réessayer.';
+                        document.getElementById('tag-error').classList.remove('hidden');
+                    });
                 } else {
                     document.getElementById('tag-error').textContent = 'Veuillez saisir au moins un tag';
                     document.getElementById('tag-error').classList.remove('hidden');
@@ -496,16 +630,39 @@
             });
 
             document.getElementById('import-form').addEventListener('submit', function(e) {
-                // Dans un environnement réel, le formulaire serait soumis directement à Laravel
-                // Cette partie est pour la démonstration uniquement
                 e.preventDefault();
                 const fileInput = document.getElementById('import-file');
                 
                 if (fileInput.files.length > 0) {
-                    console.log('Fichier à importer:', fileInput.files[0].name);
-                    showToast('Tags importés avec succès');
-                    importContainer.classList.add('hidden');
-                    this.reset();
+                    const formData = new FormData();
+                    formData.append('tags_file', fileInput.files[0]);
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                    
+                    // Envoyer une requête AJAX pour importer les tags
+                    fetch('/admin/tags/import', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(data.message);
+                            importContainer.classList.add('hidden');
+                            document.getElementById('import-form').reset();
+                            // Recharger la page pour afficher les nouveaux tags
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            document.getElementById('import-error').textContent = data.error || 'Une erreur est survenue';
+                            document.getElementById('import-error').classList.remove('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('import-error').textContent = 'Une erreur est survenue. Veuillez réessayer.';
+                        document.getElementById('import-error').classList.remove('hidden');
+                    });
                 } else {
                     document.getElementById('import-error').textContent = 'Veuillez sélectionner un fichier';
                     document.getElementById('import-error').classList.remove('hidden');
@@ -513,20 +670,47 @@
             });
 
             editTagForm.addEventListener('submit', function(e) {
-                // Dans un environnement réel, le formulaire serait soumis directement à Laravel
-                // Cette partie est pour la démonstration uniquement
                 e.preventDefault();
                 const tagId = editTagIdInput.value;
                 const tagName = editTagNameInput.value;
                 
-                console.log('Tag à modifier:', { id: tagId, name: tagName });
-                closeEditModal();
-                showToast('Tag modifié avec succès');
+                // Envoyer une requête AJAX pour mettre à jour le tag
+                fetch(`/admin/tags/${tagId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        id: tagId,
+                        name: tagName
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        closeEditModal();
+                        showToast(data.message);
+                        // Recharger la page pour afficher les modifications
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        document.getElementById('edit-error').textContent = data.error;
+                        document.getElementById('edit-error').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('edit-error').textContent = 'Une erreur est survenue. Veuillez réessayer.';
+                    document.getElementById('edit-error').classList.remove('hidden');
+                });
             });
 
             // Toast notification
-            function showToast(message) {
+            function showToast(message, type = 'success') {
                 toastMessage.textContent = message;
+                toast.className = `fixed bottom-4 right-4 bg-${type === 'success' ? 'green' : 'red'}-500 text-white px-6 py-3 rounded-md shadow-lg hidden transform transition-transform duration-300 ease-in-out`;
                 toast.classList.remove('hidden');
                 toast.classList.add('translate-y-0');
                 

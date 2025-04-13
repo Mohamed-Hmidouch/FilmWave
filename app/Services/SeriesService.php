@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Series;
-use App\Repositories\Interfaces\SeriesRepositoryInterface;
+use App\Repositories\SeriesRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
@@ -11,16 +11,16 @@ use Illuminate\Support\Facades\Log;
 class SeriesService
 {
     /**
-     * @var SeriesRepositoryInterface
+     * @var SeriesRepository
      */
     private $seriesRepository;
     
     /**
      * SeriesService constructor.
      *
-     * @param SeriesRepositoryInterface $seriesRepository
+     * @param SeriesRepository $seriesRepository
      */
-    public function __construct(SeriesRepositoryInterface $seriesRepository)
+    public function __construct(SeriesRepository $seriesRepository)
     {
         $this->seriesRepository = $seriesRepository;
     }

@@ -22,6 +22,24 @@
         </div>
     </header>
 
+    <!-- Notification container -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 hidden">
+        <div id="notification" class="p-4 rounded-md shadow-lg max-w-md">
+            <div class="flex items-center">
+                <div id="notification-icon" class="flex-shrink-0 mr-3"></div>
+                <div class="flex-1">
+                    <p id="notification-message" class="text-sm font-medium"></p>
+                </div>
+                <div class="ml-3">
+                    <button type="button" id="close-notification" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <span class="sr-only">Close</span>
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Dashboard Content -->
     <main class="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <!-- Stats Overview -->
@@ -466,6 +484,55 @@
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Message notification functions
+        function showNotification(type, message) {
+            const container = document.getElementById('notification-container');
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationIcon = document.getElementById('notification-icon');
+            
+            // Set message
+            notificationMessage.textContent = message;
+            
+            // Set notification type styles
+            if (type === 'success') {
+                notification.classList.add('bg-green-50');
+                notificationMessage.classList.add('text-green-800');
+                notificationIcon.innerHTML = '<i class="fas fa-check-circle text-green-400 text-lg"></i>';
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-50');
+                notificationMessage.classList.add('text-red-800');
+                notificationIcon.innerHTML = '<i class="fas fa-exclamation-circle text-red-400 text-lg"></i>';
+            }
+            
+            // Show notification
+            container.classList.remove('hidden');
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                container.classList.add('hidden');
+                // Reset classes for future use
+                notification.classList.remove('bg-green-50', 'bg-red-50');
+                notificationMessage.classList.remove('text-green-800', 'text-red-800');
+            }, 3000);
+        }
+        
+        // Close notification manually
+        document.getElementById('close-notification').addEventListener('click', function() {
+            document.getElementById('notification-container').classList.add('hidden');
+        });
+        
+        // Check for flash messages from Laravel session
+        const urlParams = new URLSearchParams(window.location.search);
+        const successMessage = "{{ session('success') }}";
+        const errorMessage = "{{ session('error') }}";
+        
+        if (successMessage) {
+            showNotification('success', successMessage);
+        } else if (errorMessage) {
+            showNotification('error', errorMessage);
+        }
+        
         const addButton = document.getElementById('add-episode');
         const container = document.getElementById('episodes-container');
         let episodeCount = 1;
@@ -489,6 +556,9 @@
                             <input type="number" name="episodes[${episodeCount}][number]" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="${episodeCount + 1}" min="1">
                         </div>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-700">Video File (MP4)</label>
                         <div class="flex justify-center px-6 pt-5 pb-6 mt-1 border-2 border-gray-300 border-dashed rounded-md">
                             <div class="space-y-1 text-center">
                                 <i class="mx-auto text-3xl text-gray-400 fas fa-file-video video-icon"></i>
@@ -496,13 +566,10 @@
                                     <label for="video-file-${episodeCount}" class="relative font-medium text-indigo-600 bg-white rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                         <span>Upload video file</span>
                                         <input id="video-file-${episodeCount}" name="episodes[${episodeCount}][video]" type="file" class="sr-only video-file" accept="video/mp4">
-                                    <label for="video-file-${episodeCount}" class="relative font-medium text-indigo-600 bg-white rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                        <span>Upload video file</span>
-                                        <input id="video-file-${episodeCount}" name="episodes[${episodeCount}][video]" type="file" class="sr-only" accept="video/mp4">
                                     </label>
                                     <p class="pl-1">or drag and drop</p>
                                 </div>
-                                <p class="text-xs text-gray-500">MP4 up to 2GB</p>
+                                <p class="video-file-name text-xs text-gray-500">MP4 up to 2GB</p>
                             </div>
                         </div>
                     </div>
@@ -512,6 +579,7 @@
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = episodeTemplate;
             container.appendChild(tempDiv.firstElementChild);
+            
             // Add event listeners to the remove buttons
             document.querySelectorAll('.remove-episode').forEach(button => {
                 button.addEventListener('click', function() {
@@ -523,6 +591,8 @@
             document.querySelectorAll('.episode-entry:last-child .video-file').forEach(input => {
                 input.addEventListener('change', handleFileSelection);
             });
+            
+            episodeCount++;
         });
         
         // Handle file selection for cover image

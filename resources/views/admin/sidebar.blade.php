@@ -6,25 +6,25 @@
         </div>
         <div class="flex flex-col flex-1 overflow-y-auto">
             <nav class="flex-1 px-2 py-4 space-y-1">
-                <a href="#" class="flex items-center px-4 py-2 text-sm font-medium text-white rounded-md">
-                    <i class="fas fa-home mr-3"></i>
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-2 text-sm font-medium text-white rounded-md {{ Request::routeIs('admin.dashboard') ? 'bg-gray-700' : '' }}">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
                     Dashboard
                 </a>
-                <a href="#" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
+                <a href="{{ route('admin.series.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ Request::routeIs('admin.series.*') ? 'bg-gray-700' : '' }}">
                     <i class="fas fa-film mr-3"></i>
-                    Movies
-                </a>
-                <a href="{{ route('admin.series.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-tv mr-3"></i>
                     Series
+                </a>
+                <a href="{{ route('admin.tags.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ Request::routeIs('admin.tags.*') ? 'bg-gray-700' : '' }}">
+                    <i class="fas fa-tags mr-3"></i>
+                    Tags
+                </a>
+                <a href="{{ route('admin.categories.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ Request::routeIs('admin.categories.*') ? 'bg-gray-700' : '' }}">
+                    <i class="fas fa-folder mr-3"></i>
+                    Categories
                 </a>
                 <a href="#" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
                     <i class="fas fa-users mr-3"></i>
                     Users
-                </a>
-                <a href="{{ route('admin.tags.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-tags mr-3"></i>
-                    Tags
                 </a>
                 <a href="#" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
                     <i class="fas fa-comments mr-3"></i>

@@ -63,6 +63,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     Route::resource('series', SeriesController::class);
     Route::resource('categories', CategorieController::class);
+    Route::post('categories/batch', [CategorieController::class, 'storeBatch'])->name('categories.batch.store');
+    Route::delete('categories/batch', [CategorieController::class, 'destroyBatch'])->name('categories.batch.destroy');
+    Route::post('categories/import', [CategorieController::class, 'import'])->name('categories.import');
+    Route::get('categories/export', [CategorieController::class, 'export'])->name('categories.export');
     
     // Actor management
     // Route::resource('actors', ActorController::class);

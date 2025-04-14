@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use App\Repositories\SeriesRepository;
 use App\Repositories\Interfaces\TagRepositoryInterface;
 use App\Repositories\TagRepository;
+use App\Repositories\Interfaces\CategoryRepositoryInterface;
+use App\Repositories\CategoryRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Lier l'interface TagRepositoryInterface à l'implémentation TagRepository
         $this->app->bind(TagRepositoryInterface::class, TagRepository::class);
+        
+        // Lier l'interface CategoryRepositoryInterface à l'implémentation CategoryRepository
+        $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
     }
 
     /**

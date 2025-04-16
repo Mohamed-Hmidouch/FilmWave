@@ -50,6 +50,11 @@ class Content extends Model
         return $this->hasMany(Download::class);
     }
 
+    public function contentFiles()
+    {
+        return $this->hasMany(ContentFile::class);
+    }
+
     public function tags()
     {
         return $this->belongsToMany(Tag::class);

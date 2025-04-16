@@ -30,11 +30,10 @@
                     <i class="fas fa-comments mr-3"></i>
                     Reviews
                 </a>
-                <a href="{{ route('logout') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <button type="button" onclick="document.getElementById('logout-form').submit();" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white w-full text-left">
                     <i class="fas fa-sign-out-alt mr-3"></i>
                     Logout
-                </a>
+                </button>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
                     @csrf
                 </form>

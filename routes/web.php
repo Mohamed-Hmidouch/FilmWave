@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MovieController;
 use App\Http\Controllers\Admin\SeriesController;
 use App\Http\Controllers\Admin\CategorieController;
+use App\Http\Controllers\VideoPlayerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,14 @@ Route::middleware(['auth', 'role:PremiumUser,FreeUser'])->group(function () {
     Route::get('/my-list', [HomeController::class, 'myList'])->name('my-list');
     Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
     Route::get('/settings', [HomeController::class, 'settings'])->name('settings');
+    
+    // Routes pour le visionnage de vidéos
+    Route::get('/watch/series/{seriesId}/{episodeId?}', [VideoPlayerController::class, 'watchEpisode'])->name('watch.episode');
+    Route::get('/watch/movie/{movieId}', [VideoPlayerController::class, 'watchMovie'])->name('watch.movie');
+    
+    // Routes pour le téléchargement de vidéos
+    Route::get('/download/series/{seriesId}/{episodeId}', [VideoPlayerController::class, 'downloadEpisode'])->name('download.episode');
+    Route::get('/download/movie/{movieId}', [VideoPlayerController::class, 'downloadMovie'])->name('download.movie');
 });
 
 

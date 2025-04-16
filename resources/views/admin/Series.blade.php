@@ -382,98 +382,88 @@
             <h2 class="mb-4 text-xl font-semibold text-gray-900">Recently Added Series</h2>
             <div class="overflow-hidden bg-white shadow sm:rounded-md">
                 <ul role="list" class="divide-y divide-gray-200">
-                    <!-- Series Item 1 -->
+                    @forelse($recentSeries as $series)
                     <li>
                         <div class="flex items-center px-4 py-4 sm:px-6">
                             <div class="flex items-center flex-1 min-w-0">
                                 <div class="flex-shrink-0">
-                                    <img class="object-cover w-16 h-20 rounded" src="https://via.placeholder.com/150x200?text=Series+Cover" alt="Series cover">
+                                    <img class="object-cover w-16 h-20 rounded" 
+                                         src="{{ asset('storage/' . $series->content->cover_image) }}" 
+                                         alt="{{ $series->content->title }} cover" 
+                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/150x200?text=No+Image';">
                                 </div>
                                 <div class="flex-1 min-w-0 px-4">
                                     <div>
-                                        <p class="text-sm font-medium text-indigo-600 truncate">The Witcher Season 2</p>
+                                        <p class="text-sm font-medium text-indigo-600 truncate">{{ $series->content->title }}</p>
                                         <p class="mt-1 text-sm text-gray-500">
-                                            <span class="mr-2">2021</span>
-                                            <span class="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Fantasy</span>
-                                            <span class="px-2 py-1 ml-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">Adventure</span>
+                                            <span class="mr-2">{{ $series->content->release_year }}</span>
+                                            @if($series->content->categories->isNotEmpty())
+                                                @foreach($series->content->categories->take(2) as $category)
+                                                <span class="px-2 py-1 text-xs font-medium text-{{ ['green', 'blue', 'red', 'yellow', 'purple', 'indigo'][rand(0, 5)] }}-800 bg-{{ ['green', 'blue', 'red', 'yellow', 'purple', 'indigo'][rand(0, 5)] }}-100 rounded-full">{{ $category->name }}</span>
+                                                @endforeach
+                                            @endif
                                         </p>
+                                    </div>
+                                    <!-- Episodes Summary -->
+                                    <div class="mt-2">
+                                        <p class="text-xs font-medium text-gray-700">
+                                            {{ $series->seasons }} saison(s), {{ $series->total_episodes }} épisode(s)
+                                        </p>
+                                        <!-- Toggle button for showing episodes -->
+                                        <button type="button" 
+                                                onclick="toggleEpisodes('series-{{ $series->id }}')" 
+                                                class="mt-1 text-xs text-indigo-600 hover:text-indigo-800">
+                                            <i class="fas fa-chevron-down mr-1 toggle-icon-{{ $series->id }}"></i> 
+                                            Voir les épisodes
+                                        </button>
+                                        
+                                        <!-- Episodes list (initially hidden) -->
+                                        <div id="series-{{ $series->id }}" class="hidden mt-2 pl-2 border-l-2 border-indigo-200">
+                                            @if($series->episodes->isNotEmpty())
+                                                @php
+                                                    $episodesBySeason = $series->episodes->groupBy('season_number');
+                                                @endphp
+                                                
+                                                @foreach($episodesBySeason as $season => $episodes)
+                                                    <p class="my-1 text-xs font-semibold text-gray-700">Saison {{ $season }}</p>
+                                                    <ul class="pl-2 space-y-1">
+                                                        @foreach($episodes->sortBy('episode_number') as $episode)
+                                                        <li class="text-xs text-gray-600">
+                                                            <span class="font-medium">{{ $episode->episode_number }}.</span> 
+                                                            {{ $episode->title }} 
+                                                            @if($episode->release_date)
+                                                                <span class="italic">({{ \Carbon\Carbon::parse($episode->release_date)->format('d/m/Y') }})</span>
+                                                            @endif
+                                                        </li>
+                                                        @endforeach
+                                                    </ul>
+                                                @endforeach
+                                            @else
+                                                <p class="text-xs text-gray-500 italic">Aucun épisode disponible</p>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div>
                                 <div class="flex space-x-2">
-                                    <button type="button" class="p-2 text-gray-500 bg-white rounded-full hover:text-gray-700 focus:outline-none">
+                                    <a href="{{ route('admin.series.edit', $series->id) }}" class="p-2 text-gray-500 bg-white rounded-full hover:text-gray-700 focus:outline-none">
                                         <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="p-2 text-gray-500 bg-white rounded-full hover:text-gray-700 focus:outline-none">
+                                    </a>
+                                    <button type="button" 
+                                            onclick="confirmDelete({{ $series->id }})" 
+                                            class="p-2 text-gray-500 bg-white rounded-full hover:text-red-500 focus:outline-none">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </li>
-
-                    <!-- Series Item 2 -->
-                    <li>
-                        <div class="flex items-center px-4 py-4 sm:px-6">
-                            <div class="flex items-center flex-1 min-w-0">
-                                <div class="flex-shrink-0">
-                                    <img class="object-cover w-16 h-20 rounded" src="https://via.placeholder.com/150x200?text=Series+Cover" alt="Series cover">
-                                </div>
-                                <div class="flex-1 min-w-0 px-4">
-                                    <div>
-                                        <p class="text-sm font-medium text-indigo-600 truncate">Squid Game</p>
-                                        <p class="mt-1 text-sm text-gray-500">
-                                            <span class="mr-2">2021</span>
-                                            <span class="px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">Drama</span>
-                                            <span class="px-2 py-1 ml-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">Thriller</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex space-x-2">
-                                    <button type="button" class="p-2 text-gray-500 bg-white rounded-full hover:text-gray-700 focus:outline-none">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="p-2 text-gray-500 bg-white rounded-full hover:text-gray-700 focus:outline-none">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                    @empty
+                    <li class="py-4 px-6 text-center text-gray-500">
+                        Aucune série n'a été ajoutée récemment
                     </li>
-
-                    <!-- Series Item 3 -->
-                    <li>
-                        <div class="flex items-center px-4 py-4 sm:px-6">
-                            <div class="flex items-center flex-1 min-w-0">
-                                <div class="flex-shrink-0">
-                                    <img class="object-cover w-16 h-20 rounded" src="https://via.placeholder.com/150x200?text=Series+Cover" alt="Series cover">
-                                </div>
-                                <div class="flex-1 min-w-0 px-4">
-                                    <div>
-                                        <p class="text-sm font-medium text-indigo-600 truncate">Money Heist Final Season</p>
-                                        <p class="mt-1 text-sm text-gray-500">
-                                            <span class="mr-2">2021</span>
-                                            <span class="px-2 py-1 text-xs font-medium text-purple-800 bg-purple-100 rounded-full">Crime</span>
-                                            <span class="px-2 py-1 ml-1 text-xs font-medium text-indigo-800 bg-indigo-100 rounded-full">Thriller</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex space-x-2">
-                                    <button type="button" class="p-2 text-gray-500 bg-white rounded-full hover:text-gray-700 focus:outline-none">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="p-2 text-gray-500 bg-white rounded-full hover:text-gray-700 focus:outline-none">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
+                    @endforelse
                 </ul>
             </div>
         </div>
@@ -483,18 +473,59 @@
     </div>
 </body>
 <script>
+    function toggleEpisodes(episodesId) {
+        const episodesElement = document.getElementById(episodesId);
+        const seriesId = episodesId.split('-')[1];
+        const toggleIcon = document.querySelector('.toggle-icon-' + seriesId);
+        
+        if (episodesElement.classList.contains('hidden')) {
+            episodesElement.classList.remove('hidden');
+            toggleIcon.classList.remove('fa-chevron-down');
+            toggleIcon.classList.add('fa-chevron-up');
+            toggleIcon.parentNode.textContent = ' Masquer les épisodes';
+            toggleIcon.parentNode.prepend(toggleIcon);
+        } else {
+            episodesElement.classList.add('hidden');
+            toggleIcon.classList.remove('fa-chevron-up');
+            toggleIcon.classList.add('fa-chevron-down');
+            toggleIcon.parentNode.textContent = ' Voir les épisodes';
+            toggleIcon.parentNode.prepend(toggleIcon);
+        }
+    }
+    
+    function confirmDelete(seriesId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette série ? Cette action est irréversible.')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/series/' + seriesId;
+            
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            form.appendChild(methodInput);
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            
+            form.submit();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Message notification functions
         function showNotification(type, message) {
             const container = document.getElementById('notification-container');
             const notification = document.getElementById('notification');
             const notificationMessage = document.getElementById('notification-message');
             const notificationIcon = document.getElementById('notification-icon');
             
-            // Set message
             notificationMessage.textContent = message;
             
-            // Set notification type styles
             if (type === 'success') {
                 notification.classList.add('bg-green-50');
                 notificationMessage.classList.add('text-green-800');
@@ -505,25 +536,19 @@
                 notificationIcon.innerHTML = '<i class="fas fa-exclamation-circle text-red-400 text-lg"></i>';
             }
             
-            // Show notification
             container.classList.remove('hidden');
             
-            // Auto hide after 3 seconds
             setTimeout(() => {
                 container.classList.add('hidden');
-                // Reset classes for future use
                 notification.classList.remove('bg-green-50', 'bg-red-50');
                 notificationMessage.classList.remove('text-green-800', 'text-red-800');
             }, 3000);
         }
         
-        // Close notification manually
         document.getElementById('close-notification').addEventListener('click', function() {
             document.getElementById('notification-container').classList.add('hidden');
         });
         
-        // Check for flash messages from Laravel session
-        const urlParams = new URLSearchParams(window.location.search);
         const successMessage = "{{ session('success') }}";
         const errorMessage = "{{ session('error') }}";
         
@@ -580,14 +605,12 @@
             tempDiv.innerHTML = episodeTemplate;
             container.appendChild(tempDiv.firstElementChild);
             
-            // Add event listeners to the remove buttons
             document.querySelectorAll('.remove-episode').forEach(button => {
                 button.addEventListener('click', function() {
                     this.closest('.episode-entry').remove();
                 });
             });
             
-            // Add event listeners to the new video file input
             document.querySelectorAll('.episode-entry:last-child .video-file').forEach(input => {
                 input.addEventListener('change', handleFileSelection);
             });
@@ -595,7 +618,6 @@
             episodeCount++;
         });
         
-        // Handle file selection for cover image
         document.getElementById('cover-image').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -604,7 +626,6 @@
                 const icon = document.getElementById('cover-image-icon');
                 const nameElement = document.getElementById('cover-image-name');
                 
-                // Show preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     previewImg.src = e.target.result;
@@ -613,12 +634,10 @@
                 };
                 reader.readAsDataURL(file);
                 
-                // Show file name
                 nameElement.textContent = file.name;
             }
         });
         
-        // Handle file selection for video files
         function handleFileSelection(e) {
             const file = e.target.files[0];
             if (file) {
@@ -630,7 +649,6 @@
             }
         }
         
-        // Add event listener to initial video file input
         document.querySelectorAll('.video-file').forEach(input => {
             input.addEventListener('change', handleFileSelection);
         });

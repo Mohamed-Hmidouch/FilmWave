@@ -28,7 +28,18 @@ class SeriesController extends BaseController
      */
     public function index()
     {
-        return view('admin.Series');
+        try {
+            // Récupérer les séries récentes avec leurs contenus et épisodes associés
+            $recentSeries = $this->seriesService->getRecentSeries(10);
+            
+            // Pour chaque série, charger les relations nécessaires si ce n'est pas déjà fait
+            $recentSeries->load(['content', 'content.categories', 'content.tags', 'episodes']);
+            
+            return view('admin.Series', compact('recentSeries'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Erreur lors du chargement des séries: ' . $e->getMessage());
+        }
     }
 
     /**

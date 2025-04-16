@@ -55,9 +55,9 @@
                 </div>
                 
                 <div class="flex space-x-2 mt-3">
-                    <button class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
+                    <a href="/watch/series/1" class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
                         <i class="fas fa-play mr-2"></i> Regarder
-                    </button>
+                    </a>
                     <button class="add-to-list-button bg-transparent hover:bg-gray-700 text-white py-2 px-3 rounded-md border border-gray-600 text-sm flex items-center justify-center transition-all">
                         <i class="fas fa-plus"></i>
                     </button>
@@ -114,9 +114,9 @@
                 </div>
                 
                 <div class="flex space-x-2 mt-3">
-                    <button class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
+                    <a href="/watch/series/2" class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
                         <i class="fas fa-play mr-2"></i> Regarder
-                    </button>
+                    </a>
                     <button class="add-to-list-button bg-transparent hover:bg-gray-700 text-white py-2 px-3 rounded-md border border-gray-600 text-sm flex items-center justify-center transition-all">
                         <i class="fas fa-plus"></i>
                     </button>
@@ -173,9 +173,9 @@
                 </div>
                 
                 <div class="flex space-x-2 mt-3">
-                    <button class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
+                    <a href="/watch/series/3" class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
                         <i class="fas fa-play mr-2"></i> Regarder
-                    </button>
+                    </a>
                     <button class="add-to-list-button bg-transparent hover:bg-gray-700 text-white py-2 px-3 rounded-md border border-gray-600 text-sm flex items-center justify-center transition-all">
                         <i class="fas fa-plus"></i>
                     </button>
@@ -232,9 +232,9 @@
                 </div>
                 
                 <div class="flex space-x-2 mt-3">
-                    <button class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
+                    <a href="/watch/series/4" class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
                         <i class="fas fa-play mr-2"></i> Regarder
-                    </button>
+                    </a>
                     <button class="add-to-list-button bg-transparent hover:bg-gray-700 text-white py-2 px-3 rounded-md border border-gray-600 text-sm flex items-center justify-center transition-all">
                         <i class="fas fa-plus"></i>
                     </button>
@@ -291,9 +291,9 @@
                 </div>
                 
                 <div class="flex space-x-2 mt-3">
-                    <button class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
+                    <a href="/watch/series/5" class="watch-button flex-1 text-white py-2 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-all">
                         <i class="fas fa-play mr-2"></i> Regarder
-                    </button>
+                    </a>
                     <button class="add-to-list-button bg-transparent hover:bg-gray-700 text-white py-2 px-3 rounded-md border border-gray-600 text-sm flex items-center justify-center transition-all">
                         <i class="fas fa-plus"></i>
                     </button>

@@ -66,6 +66,8 @@ class AuthController extends BaseController
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('home')->with('success', 'You have been logged out successfully.');
+        
+        // Redirection explicite vers la page d'accueil
+        return redirect()->route('home')->with('success', 'Vous avez été déconnecté avec succès.');
     }
 }

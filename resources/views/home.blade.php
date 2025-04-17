@@ -146,8 +146,8 @@
     <!-- Notification element for movies -->
     <div id="notification" class="notification">
         <span id="notification-message"></span>
-    </div>
-    
+                    </div>
+                    
     <!-- Include sidebar -->
     @include('partials.sidebar')
 
@@ -167,7 +167,7 @@
                             <span class="tag">Drama</span>
                             <span class="tag">Crime</span>
                             <span class="tag">Thriller</span>
-                        </div>
+                                </div>
                         <h1 class="text-5xl font-bold mb-4">Succession</h1>
                         <div class="flex items-center space-x-4 mb-4">
                             <span class="text-film-red">2018-2023</span>
@@ -188,14 +188,17 @@
                                 <i class="fas fa-plus"></i>
                                 <span>My List</span>
                             </button>
-                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
+
+            <!-- Popular Series Section -->
+            @include('partials._featured_movies', ['series' => $series])
 
             <!-- Content Tabs -->
             <section class="py-12">
-                <div class="container mx-auto px-4">
+            <div class="container mx-auto px-4">
                     <div class="flex items-center justify-between mb-8">
                         <div class="flex space-x-4 border-b border-film-gray pb-4">
                             <button @click="activeTab = 'movies'" :class="{ 'text-film-red border-b-2 border-film-red': activeTab === 'movies' }" class="text-gray-400 hover:text-film-red transition px-4 py-2">
@@ -233,13 +236,13 @@
                                                 <button class="bg-film-red hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
                                                     <i class="fas fa-play mr-1"></i> Watch
                                                 </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Movie Card 2 -->
+                    </div>
+                </div>
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Card 2 -->
                             <div class="group relative movie-card bg-film-gray rounded-lg overflow-hidden">
                                 <div class="aspect-w-2 aspect-h-3">
                                     <img src="https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg" alt="Interstellar" class="w-full h-64 object-cover">
@@ -258,11 +261,11 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Movie Card 3 -->
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Card 3 -->
                             <div class="group relative movie-card bg-film-gray rounded-lg overflow-hidden">
                                 <div class="aspect-w-2 aspect-h-3">
                                     <img src="https://m.media-amazon.com/images/M/MV5BNzA1Njg4NzYxOV5BMl5BanBnXkFtZTgwODk5NjU3MzI@._V1_.jpg" alt="Blade Runner 2049" class="w-full h-64 object-cover">
@@ -281,11 +284,11 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Movie Card 4 -->
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Card 4 -->
                             <div class="group relative movie-card bg-film-gray rounded-lg overflow-hidden">
                                 <div class="aspect-w-2 aspect-h-3">
                                     <img src="https://m.media-amazon.com/images/M/MV5BNDE3ODcxYzMtY2YzZC00NmNlLWJiNDMtZDViZWM2MzIxZDYwXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg" alt="The Shawshank Redemption" class="w-full h-64 object-cover">
@@ -304,11 +307,11 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Movie Card 5 -->
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Card 5 -->
                             <div class="group relative movie-card bg-film-gray rounded-lg overflow-hidden">
                                 <div class="aspect-w-2 aspect-h-3">
                                     <img src="https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_.jpg" alt="Parasite" class="w-full h-64 object-cover">
@@ -329,10 +332,10 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                        </div>
                         </div>
                     </div>
-
+                    
                     <!-- TV Shows Tab -->
                     <div x-show="activeTab === 'shows'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -378,10 +381,10 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
+                        </div>
+                        </div>
+                    </div>
+                    
                             <!-- TV Show Card 3 -->
                             <div class="group relative movie-card bg-film-gray rounded-lg overflow-hidden">
                                 <div class="aspect-w-2 aspect-h-3">
@@ -401,10 +404,10 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
+                        </div>
+                        </div>
+                    </div>
+                    
                             <!-- TV Show Card 4 -->
                             <div class="group relative movie-card bg-film-gray rounded-lg overflow-hidden">
                                 <div class="aspect-w-2 aspect-h-3">
@@ -424,10 +427,10 @@
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
+                        </div>
+                        </div>
+                    </div>
+                    
                             <!-- TV Show Card 5 -->
                             <div class="group relative movie-card bg-film-gray rounded-lg overflow-hidden">
                                 <div class="aspect-w-2 aspect-h-3">
@@ -449,41 +452,41 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                        </div>
                         </div>
                     </div>
-
+                    
                     <!-- Trending Tab -->
                     <div x-show="activeTab === 'trending'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                             <!-- Trending content here -->
-                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
             <!-- Genre Section -->
             <section class="py-12 bg-film-gray">
-                <div class="container mx-auto px-4">
+            <div class="container mx-auto px-4">
                     <h2 class="text-2xl font-bold mb-6">Browse by Genre</h2>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         @foreach(['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Thriller', 'Animation', 'Romance', 'Fantasy', 'Adventure', 'Crime', 'Documentary'] as $genre)
                         <a href="#" class="bg-film-dark hover:bg-film-gray border border-film-red text-white px-4 py-3 rounded-lg text-center transition hover:text-film-red">
-                            {{ $genre }}
-                        </a>
-                        @endforeach
-                    </div>
+                        {{ $genre }}
+                    </a>
+                    @endforeach
                 </div>
-            </section>
+            </div>
+        </section>
 
             <!-- Featured Series -->
             <section class="py-12">
-                <div class="container mx-auto px-4">
-                    <div class="flex justify-between items-center mb-6">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold">Featured Series</h2>
                         <a href="#" class="text-film-red hover:text-red-600">View All</a>
-                    </div>
-                    <div class="relative">
+                </div>
+                        <div class="relative">
                         <div class="flex space-x-6 overflow-x-auto pb-4 scrollbar-hide">
                             <!-- Featured Show 1 -->
                             <div class="flex-shrink-0 w-[350px] rounded-lg overflow-hidden bg-film-gray movie-card-hover">
@@ -534,18 +537,18 @@
                                         <span>Fantasy</span>
                                         <span class="mx-2">•</span>
                                         <span>2022</span>
-                                    </div>
+                        </div>
                                     <div class="flex items-center mt-2">
                                         <div class="flex items-center">
                                             <i class="fas fa-star text-yellow-500 mr-1"></i>
                                             <span>8.8</span>
-                                        </div>
+                            </div>
                                         <div class="ml-auto">
                                             <button class="bg-film-red hover:bg-red-700 text-white p-2 rounded-full">
                                                 <i class="fas fa-play"></i>
                                             </button>
-                                        </div>
-                                    </div>
+                        </div>
+                    </div>
                                 </div>
                             </div>
 
@@ -566,18 +569,18 @@
                                         <span>Comedy Horror</span>
                                         <span class="mx-2">•</span>
                                         <span>2022</span>
-                                    </div>
+                        </div>
                                     <div class="flex items-center mt-2">
                                         <div class="flex items-center">
                                             <i class="fas fa-star text-yellow-500 mr-1"></i>
                                             <span>8.2</span>
-                                        </div>
+                            </div>
                                         <div class="ml-auto">
                                             <button class="bg-film-red hover:bg-red-700 text-white p-2 rounded-full">
                                                 <i class="fas fa-play"></i>
                                             </button>
-                                        </div>
-                                    </div>
+                        </div>
+                    </div>
                                 </div>
                             </div>
 
@@ -598,24 +601,24 @@
                                         <span>Comedy Drama</span>
                                         <span class="mx-2">•</span>
                                         <span>2022</span>
-                                    </div>
+                        </div>
                                     <div class="flex items-center mt-2">
                                         <div class="flex items-center">
                                             <i class="fas fa-star text-yellow-500 mr-1"></i>
                                             <span>8.7</span>
-                                        </div>
+                            </div>
                                         <div class="ml-auto">
                                             <button class="bg-film-red hover:bg-red-700 text-white p-2 rounded-full">
                                                 <i class="fas fa-play"></i>
                                             </button>
-                                        </div>
-                                    </div>
+                        </div>
+                    </div>
                                 </div>
-                            </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
             
             <!-- Additional content here -->
         </div>

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * @package namespace App\Repositories;
  */
-class SeriesRepositoryRepositoryEloquent extends BaseRepository implements SeriesRepositoryInterface
+class SeriesRepositoryRepositoryEloquent  implements SeriesRepositoryInterface
 {
     /**
      * Specify Model class name

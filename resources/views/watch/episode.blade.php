@@ -240,9 +240,40 @@
                                                 <i class="fas fa-step-forward"></i>
                                             </a>
                                             @endif
-                                            <a href="/download/series/{{ $series->id }}/{{ $episode->id }}" class="text-white hover:text-film-red transition">
-                                                <i class="fas fa-download"></i>
-                                            </a>
+                                            <div class="relative" x-data="{ open: false }">
+                                                <button @click="open = !open" class="text-white hover:text-film-red transition">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                                <div 
+                                                    x-show="open" 
+                                                    @click.away="open = false"
+                                                    x-transition:enter="transition ease-out duration-200" 
+                                                    x-transition:enter-start="opacity-0 transform scale-95" 
+                                                    x-transition:enter-end="opacity-100 transform scale-100" 
+                                                    x-transition:leave="transition ease-in duration-150" 
+                                                    x-transition:leave-start="opacity-100 transform scale-100" 
+                                                    x-transition:leave-end="opacity-0 transform scale-95" 
+                                                    class="absolute right-0 mt-2 w-48 bg-[#242424] rounded-md shadow-lg py-1 z-50"
+                                                >
+                                                    @if(isset($episode->content) && isset($episode->content->contentFiles) && $episode->content->contentFiles->count() > 1)
+                                                        @foreach($episode->content->contentFiles as $file)
+                                                            <a 
+                                                                href="{{ route('download.episode', ['seriesId' => $series->id, 'episodeId' => $episode->id, 'quality' => $file->quality]) }}" 
+                                                                class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors"
+                                                            >
+                                                                Qualité {{ $file->quality }} ({{ $file->size_mb }} MB)
+                                                            </a>
+                                                        @endforeach
+                                                    @else
+                                                        <a 
+                                                            href="{{ route('download.episode', ['seriesId' => $series->id, 'episodeId' => $episode->id]) }}" 
+                                                            class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors"
+                                                        >
+                                                            Qualité standard
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -278,10 +309,44 @@
                                 <button class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center control-button">
                                     <i class="fas fa-thumbs-up mr-2"></i> J'aime
                                 </button>
-                                <a href="/download/series/{{ $series->id }}/{{ $episode->id }}" 
-                                   class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center control-button">
-                                    <i class="fas fa-download mr-2"></i> Télécharger
-                                </a>
+                                <div class="relative group" x-data="{ open: false }">
+                                    <button 
+                                        @click="open = !open" 
+                                        class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center control-button"
+                                    >
+                                        <i class="fas fa-download mr-2"></i> Télécharger
+                                        <i class="fas fa-chevron-down ml-2 text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                                    </button>
+                                    <div 
+                                        x-show="open" 
+                                        @click.away="open = false"
+                                        x-transition:enter="transition ease-out duration-200" 
+                                        x-transition:enter-start="opacity-0 transform scale-95" 
+                                        x-transition:enter-end="opacity-100 transform scale-100" 
+                                        x-transition:leave="transition ease-in duration-150" 
+                                        x-transition:leave-start="opacity-100 transform scale-100" 
+                                        x-transition:leave-end="opacity-0 transform scale-95" 
+                                        class="absolute right-0 mt-2 w-48 bg-[#242424] rounded-md shadow-lg py-1 z-50"
+                                    >
+                                        @if(isset($episode->content) && isset($episode->content->contentFiles) && $episode->content->contentFiles->count() > 1)
+                                            @foreach($episode->content->contentFiles as $file)
+                                                <a 
+                                                    href="{{ route('download.episode', ['seriesId' => $series->id, 'episodeId' => $episode->id, 'quality' => $file->quality]) }}" 
+                                                    class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors"
+                                                >
+                                                    Qualité {{ $file->quality }} ({{ $file->size_mb }} MB)
+                                                </a>
+                                            @endforeach
+                                        @else
+                                            <a 
+                                                href="{{ route('download.episode', ['seriesId' => $series->id, 'episodeId' => $episode->id]) }}" 
+                                                class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors"
+                                            >
+                                                Qualité standard
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- Series Details with better styling -->

@@ -24,7 +24,16 @@ class CheckoutController extends Controller
 
     public function success(Request $request)
     {
-        return view('subscription.success');
+        $user = Auth::user();
+        
+        if ($user) {
+            $user->lifetime_access = true;
+            $user->save();
+            return redirect()->route('user.homme')->with('success', 'Succès! Votre plan a été mis à niveau. Profitez de votre accès premium!');
+        } else {
+            Log::error('No authenticated user found in checkout success method');
+            return redirect()->route('login')->with('error', 'Please login to complete your subscription');
+        }
     }
 
     public function cancel(Request $request)

@@ -14,16 +14,16 @@
             
             <!-- Main Navigation Links -->
             <div class="hidden md:flex space-x-6">
-                <a href="#" class="text-white hover:text-film-red transition">Home</a>
-                <a href="#" class="text-white hover:text-film-red transition">Movies</a>
+                <a href="#" class="text-white hover:text-film-red transition">Accueil</a>
+                <a href="#" class="text-white hover:text-film-red transition">Films</a>
                 <a href="#" class="text-white hover:text-film-red transition">Anime</a>
-                <a href="#" class="text-white hover:text-film-red transition">TV Programs</a>
+                <a href="#" class="text-white hover:text-film-red transition">Séries TV</a>
             </div>
             
             <!-- Right Side Actions -->
             <div class="flex items-center space-x-4">
                 <div class="relative hidden md:block">
-                    <input type="text" placeholder="Search..." class="bg-film-gray text-gray-200 rounded-full py-1 px-4 pr-8 focus:outline-none focus:ring-1 focus:ring-film-red w-36 lg:w-48 transition-all duration-300 focus:w-56">
+                    <input type="text" placeholder="Rechercher..." class="bg-film-gray text-gray-200 rounded-full py-1 px-4 pr-8 focus:outline-none focus:ring-1 focus:ring-film-red w-36 lg:w-48 transition-all duration-300 focus:w-56">
                     <button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-film-red">
                         <i class="fas fa-search"></i>
                     </button>
@@ -31,11 +31,11 @@
                 
                 @guest
                     <a href="{{ route('login') }}" class="bg-transparent hover:bg-film-red/20 text-white px-4 py-1 rounded-md border border-film-red transition">
-                        Log In
+                        Connexion
                     </a>
                     
                     <a href="{{ route('register') }}" class="bg-film-red hover:bg-film-red/90 text-white px-4 py-1 rounded-md transition">
-                        Sign Up
+                        Inscription
                     </a>
                 @else
                     <div class="relative" x-data="{ open: false }">
@@ -56,14 +56,14 @@
                              style="display: none;"
                              class="absolute right-0 mt-2 w-48 bg-film-gray rounded-md shadow-lg z-10">
                             <div class="py-1">
-                                <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">Profile</a>
-                                <a href="{{ route('settings') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">Settings</a>
-                                <a href="{{ route('my-list') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">My List</a>
+                                <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">Profil</a>
+                                <a href="{{ route('settings') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">Paramètres</a>
+                                <a href="{{ route('my-list') }}" class="block px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">Ma Liste</a>
                                 <div class="border-t border-gray-700"></div>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-film-red/20 hover:text-film-red">
-                                        Log Out
+                                        Déconnexion
                                     </button>
                                 </form>
                             </div>

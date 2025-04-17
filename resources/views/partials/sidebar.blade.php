@@ -55,9 +55,17 @@
             </div>
             
             <div class="mt-8">
-                <a href="{{ url('/subscribe') }}" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center transition-colors">
-                    <i class="fas fa-crown mr-2"></i> Cinema Club Entry
-                </a>
+                @if(Auth::check() && Auth::user()->lifetime_access)
+                    <div class="w-full py-3 px-6 bg-green-600 text-white rounded-lg font-medium text-center mb-2">
+                        You have Premium Access
+                    </div>
+                    <p class="text-sm text-gray-400 text-center">Enjoy unlimited access to all premium content</p>
+                @else
+                    <a href="{{ route('subscribe.checkout') }}" id="checkout-button" class="block w-full py-3 px-6 bg-film-red text-white rounded-lg font-medium hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-film-red focus:ring-offset-film-dark pulse-animation text-center">
+                        Get Premium
+                    </a>
+                    <div id="checkout-container" class="mt-4"></div>
+                @endif
             </div>
         </div>
     </div>

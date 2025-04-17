@@ -11,13 +11,14 @@
     <style>
         body {
             background-color: #0F0F0F;
-            color: #FFFFFF;
+            color: #fff;
         }
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
             overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
         .video-container iframe, 
         .video-container video {
@@ -38,13 +39,45 @@
             transition: all 0.3s ease;
         }
         .control-button:hover {
-            transform: scale(1.1);
+            transform: translateY(-2px);
+        }
+        .control-button:hover::before {
+            left: 100%;
         }
         .notification-toast {
-            transition: opacity 0.5s ease-out;
+            animation: fadeOut 0.5s ease 5s forwards;
         }
-        .notification-toast.fade-out {
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+        .player-controls-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            padding: 30px 20px 10px;
             opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+        .player-controls-overlay a {
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+        .player-controls-overlay a:hover {
+            color: #E50914 !important;
+            transform: scale(1.1);
+        }
+        .video-container:hover .player-controls-overlay {
+            opacity: 1;
+        }
+        .text-film-red {
+            color: #E50914;
+        }
+        .hover\:text-film-red:hover {
+            color: #E50914;
         }
     </style>
 </head>
@@ -81,12 +114,26 @@
         <!-- Video Player Section -->
         <section class="bg-black">
             <div class="container mx-auto">
-                <div class="video-container">
+                <div class="video-container relative">
                     <!-- Remplacer par l'URL vidéo réelle du film -->
                     <video controls autoplay poster="{{ $movie->poster ?? 'https://via.placeholder.com/1280x720' }}" class="w-full">
                         <source src="{{ $movie->video_url ?? 'https://example.com/placeholder.mp4' }}" type="video/mp4">
                         Votre navigateur ne supporte pas la lecture de vidéos.
                     </video>
+                    
+                    <!-- Overlay controls that appear on hover -->
+                    <div class="player-controls-overlay">
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm text-gray-300">
+                                <span class="movie-duration">{{ $movie->duration ?? '120' }} min</span>
+                            </div>
+                            <div class="flex space-x-3">
+                                <a href="{{ route('download.movie', ['movieId' => $movie->id]) }}" class="text-white hover:text-film-red transition">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -124,9 +171,44 @@
                             <button class="bg-transparent border border-gray-600 text-white px-4 py-2 rounded-md flex items-center control-button">
                                 <i class="fas fa-share mr-2"></i> Partager
                             </button>
-                            <a href="/download/movie/{{ $movie->id }}" class="bg-transparent border border-gray-600 text-white px-4 py-2 rounded-md flex items-center control-button">
-                                <i class="fas fa-download mr-2"></i> Télécharger
-                            </a>
+                            <div class="relative group" x-data="{ open: false }">
+                                <button 
+                                    @click="open = !open" 
+                                    class="bg-transparent border border-gray-600 text-white px-4 py-2 rounded-md flex items-center control-button"
+                                >
+                                    <i class="fas fa-download mr-2"></i> Télécharger
+                                    <i class="fas fa-chevron-down ml-2 text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                                </button>
+                                <div 
+                                    x-show="open" 
+                                    @click.away="open = false"
+                                    x-transition:enter="transition ease-out duration-200" 
+                                    x-transition:enter-start="opacity-0 transform scale-95" 
+                                    x-transition:enter-end="opacity-100 transform scale-100" 
+                                    x-transition:leave="transition ease-in duration-150" 
+                                    x-transition:leave-start="opacity-100 transform scale-100" 
+                                    x-transition:leave-end="opacity-0 transform scale-95" 
+                                    class="absolute right-0 mt-2 w-48 bg-[#242424] rounded-md shadow-lg py-1 z-50"
+                                >
+                                    @if(isset($movie->content) && isset($movie->content->contentFiles) && $movie->content->contentFiles->count() > 1)
+                                        @foreach($movie->content->contentFiles as $file)
+                                            <a 
+                                                href="{{ route('download.movie', ['movieId' => $movie->id, 'quality' => $file->quality]) }}" 
+                                                class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors"
+                                            >
+                                                Qualité {{ $file->quality }} ({{ $file->size_mb }} MB)
+                                            </a>
+                                        @endforeach
+                                    @else
+                                        <a 
+                                            href="{{ route('download.movie', ['movieId' => $movie->id]) }}" 
+                                            class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors"
+                                        >
+                                            Qualité standard
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Movie Details -->
@@ -257,30 +339,41 @@
             const savedTime = localStorage.getItem('watchProgress_movie_{{ $movie->id }}');
             if (savedTime && savedTime > 0) {
                 // Ne pas reprendre si on est presque à la fin du film
-                if (savedTime < video.duration - 120) { // 2 minutes avant la fin
+                if (savedTime < video.duration - 120) { // 2 minutes de la fin
                     video.currentTime = savedTime;
                 }
             }
-        });
-        
-        // Fonction pour redémarrer le film
-        function restartMovie() {
-            const video = document.querySelector('video');
-            video.currentTime = 0;
-            video.play();
-        }
-        
-        // Auto-hide notification
-        document.addEventListener('DOMContentLoaded', function() {
-            const notification = document.querySelector('.notification-toast');
-            if (notification) {
+            
+            // Fonction pour redémarrer le film
+            window.restartMovie = function() {
+                video.currentTime = 0;
+                video.play();
+            };
+            
+            // Gérer l'affichage des notifications toast
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `${type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white p-4 fixed top-20 right-4 rounded shadow-lg z-50 notification-toast`;
+                toast.innerHTML = `
+                    ${message}
+                    <button class="ml-2 font-bold" onclick="this.parentElement.remove()">&times;</button>
+                `;
+                document.body.appendChild(toast);
+                
+                // Supprimer automatiquement après 5 secondes
                 setTimeout(() => {
-                    notification.classList.add('fade-out');
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 500);
-                }, 3000);
+                    toast.remove();
+                }, 5000);
             }
+            
+            // Ajouter des événements pour les boutons de téléchargement
+            document.querySelectorAll('a[href^="/download/"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Ne pas annuler l'événement - laissez le téléchargement se produire
+                    // mais montrez une notification
+                    showToast('Votre téléchargement va commencer dans quelques instants...', 'info');
+                });
+            });
         });
     </script>
 </body>

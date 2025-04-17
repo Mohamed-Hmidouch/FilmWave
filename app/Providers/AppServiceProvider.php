@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Repositories\SeriesRepository;
+// use App\Repositories\SeriesRepository; // غير مستخدم بعد الآن
 use App\Repositories\Interfaces\TagRepositoryInterface;
 use App\Repositories\TagRepository;
 use App\Repositories\Interfaces\CategoryRepositoryInterface;
@@ -16,9 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(SeriesRepository::class, function ($app) {
-            return new SeriesRepository();
-        });
+        // تم نقل تسجيل مستودع السلسلات إلى RepositoryServiceProvider
+        // ونستخدم الآن SeriesRepositoryInterface بدلاً من SeriesRepository
 
         // Lier l'interface TagRepositoryInterface à l'implémentation TagRepository
         $this->app->bind(TagRepositoryInterface::class, TagRepository::class);

@@ -5,11 +5,12 @@ namespace App\Repositories;
 use App\Models\Series;
 use App\Models\Episode;
 use App\Models\Content;
+use App\Repositories\Interfaces\SeriesRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
-class SeriesRepository
+class SeriesRepository implements SeriesRepositoryInterface
 {
     /**
      * Get all series
@@ -18,7 +19,7 @@ class SeriesRepository
      */
     public function getAll(): Collection
     {
-        return Series::with('content')->get();
+        return Series::with(['content', 'content.categories', 'content.tags'])->get();
     }
 
     /**
@@ -52,9 +53,8 @@ class SeriesRepository
      */
     public function create(array $data): Series
     {
-        // Commencer une transaction pour garantir la cohérence des données
         return DB::transaction(function () use ($data) {
-            // 1. D'abord créer l'entrée content
+            // Create content
             $content = Content::create([
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
@@ -67,29 +67,29 @@ class SeriesRepository
                 'views_count' => 0
             ]);
 
-            // 2. Créer la série avec le content_id
+            // Create series
             $series = Series::create([
                 'content_id' => $content->id,
                 'seasons' => $data['seasons'] ?? 1,
                 'total_episodes' => isset($data['episodes']) ? count($data['episodes']) : 0
             ]);
 
-            // 3. Ajouter des catégories (si présentes)
+            // Attach categories
             if (!empty($data['categories'])) {
                 $content->categories()->attach($data['categories']);
             }
 
-            // 4. Ajouter des tags (si présents)
+            // Attach tags
             if (!empty($data['tags'])) {
                 $content->tags()->attach($data['tags']);
             }
 
-            // 5. Ajouter des acteurs (si présents)
+            // Attach actors
             if (!empty($data['actors'])) {
                 $series->actors()->attach($data['actors']);
             }
 
-            // 6. Ajouter des épisodes (si présents)
+            // Create episodes
             if (!empty($data['episodes'])) {
                 foreach ($data['episodes'] as $episodeData) {
                     $series->episodes()->create([
@@ -103,7 +103,6 @@ class SeriesRepository
                 }
             }
 
-            // Charger les relations pour le retour
             return $series->load(['content', 'episodes', 'actors']);
         });
     }
@@ -115,7 +114,7 @@ class SeriesRepository
      * @param int $id
      * @return Series|null
      */
-    public function update(array $data, int $id): ?Series
+    public function update(array $data, $id): ?Series
     {
         $series = Series::find($id);
         if ($series) {
@@ -131,7 +130,7 @@ class SeriesRepository
      * @param int $id
      * @return bool
      */
-    public function delete(int $id): bool
+    public function delete($id): bool
     {
         $series = Series::find($id);
         if ($series) {
@@ -161,8 +160,8 @@ class SeriesRepository
      */
     public function getByCategory(int $categoryId): Collection
     {
-        return Series::whereHas('content', function ($q) use ($categoryId) {
-            $q->where('category_id', $categoryId);
+        return Series::whereHas('content.categories', function ($q) use ($categoryId) {
+            $q->where('id', $categoryId);
         })->with('content')->get();
     }
 
@@ -175,7 +174,7 @@ class SeriesRepository
     public function getByTag(int $tagId): Collection
     {
         return Series::whereHas('content.tags', function ($q) use ($tagId) {
-            $q->where('tag_id', $tagId);
+            $q->where('id', $tagId);
         })->with('content')->get();
     }
 
@@ -188,7 +187,7 @@ class SeriesRepository
     public function getByActor(int $actorId): Collection
     {
         return Series::whereHas('actors', function ($q) use ($actorId) {
-            $q->where('actor_id', $actorId);
+            $q->where('id', $actorId);
         })->with('content')->get();
     }
 
@@ -213,11 +212,12 @@ class SeriesRepository
      * @param int $limit
      * @return Collection
      */
-    public function getPopular(int $limit = 10): Collection
+    public function getPopular(int $limit): Collection
     {
-        return Series::whereHas('content', function ($q) {
-            $q->orderBy('views', 'desc');
-        })->with('content')->limit($limit)->get();
+        return Series::withCount('episodes')
+            ->orderByDesc('views_count')
+            ->limit($limit)
+            ->get();
     }
 
     /**
@@ -226,10 +226,11 @@ class SeriesRepository
      * @param int $limit
      * @return Collection
      */
-    public function getRecent(int $limit = 10): Collection
+    public function getRecent(int $limit): Collection
     {
-        return Series::whereHas('content', function ($q) {
-            $q->orderBy('created_at', 'desc');
-        })->with('content')->limit($limit)->get();
+        return Series::withCount('episodes')
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
     }
 } 

@@ -9,11 +9,11 @@ class Series extends Model
 {
     use HasFactory;
 
-
     protected $fillable = [
         'content_id', 
-        'seasons',
+        'title',
         'total_episodes',
+        'views_count'
     ];
 
     /**
@@ -25,15 +25,27 @@ class Series extends Model
     }
 
     /**
+     * Get the seasons for the series.
+     */
+    public function seasons()
+    {
+        return $this->hasMany(Season::class);
+    }
+
+    /**
      * The actors that belong to the series.
      */
     public function actors()
     {
         return $this->belongsToMany(Actor::class);
     }
+
+    /**
+     * Get all episodes for the series.
+     */
     public function episodes()
     {
-        return $this->hasMany(Episode::class);
+        return $this->hasManyThrough(Episode::class, Season::class);
     }
 
     /**

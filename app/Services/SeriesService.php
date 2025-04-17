@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Series;
-use App\Repositories\SeriesRepository;
+use App\Repositories\Interfaces\SeriesRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
@@ -11,16 +11,16 @@ use Illuminate\Support\Facades\Log;
 class SeriesService
 {
     /**
-     * @var SeriesRepository
+     * @var SeriesRepositoryInterface
      */
     private $seriesRepository;
     
     /**
      * SeriesService constructor.
      *
-     * @param SeriesRepository $seriesRepository
+     * @param SeriesRepositoryInterface $seriesRepository
      */
-    public function __construct(SeriesRepository $seriesRepository)
+    public function __construct(SeriesRepositoryInterface $seriesRepository)
     {
         $this->seriesRepository = $seriesRepository;
     }
@@ -183,5 +183,26 @@ class SeriesService
     public function getRecentSeries(int $limit = 10): Collection
     {
         return $this->seriesRepository->getRecent($limit);
+    }
+
+    /**
+     * Get all series with their relationships
+     *
+     * @return array
+     */
+    public function getAllSeriesWithRelations(): array
+    {
+        $series = $this->seriesRepository->getAll();
+        
+        return $series->map(function ($series) {
+            return [
+                'id' => $series->id,
+                'title' => $series->content->title ?? '',
+                'description' => $series->content->description ?? '',
+                'cover_image' => $series->content->cover_image ?? '/images/default-cover.jpg',
+                'categories' => $series->content->categories->pluck('name') ?? [],
+                'tags' => $series->content->tags->pluck('name') ?? [],
+            ];
+        })->toArray();
     }
 }

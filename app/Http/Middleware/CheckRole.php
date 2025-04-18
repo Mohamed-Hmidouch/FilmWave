@@ -21,33 +21,43 @@ class CheckRole
         if (!auth()->check()) {
             return redirect('/login');
         }
-        // Check if the user has the required roles
-        $user = Auth::user();
+        
+        // Get the user and their roles
         $user = auth()->user();
         $userRoles = $user->roles()->pluck('name')->toArray();
-
-        foreach ($roles as $role) {
-            if (in_array($role, $userRoles)) {
-                return $next($request);
-            }
-
         
-            // Return a 403 Forbidden response without JSON
-            if ($request->expectsJson()) {
-                abort(403, 'Access forbidden');
-            }
-
-            if (in_array('admin', $userRoles)) {
-                return redirect()->route('admin.dashboard')
-                    ->with('error', 'You do not have permission to access this page');
-            } else if (in_array('premiumUser', $userRoles)) {
-                return redirect()->route('premium.homme')
-                    ->with('error', 'You do not have permission to access this page');
-            } else {
-                return redirect()->route('user.homme')
-                    ->with('error', 'You do not have permission to access this page');
+        // Convert all roles to lowercase for case-insensitive comparison
+        $userRoles = array_map('strtolower', $userRoles);
+        $allowedRoles = array_map('strtolower', $roles);
+        
+        // Check if the user has ANY of the required roles (OR logic)
+        $hasPermission = false;
+        foreach ($allowedRoles as $role) {
+            if (in_array($role, $userRoles)) {
+                $hasPermission = true;
+                break;
             }
         }
-        return $next($request);
+        
+        if ($hasPermission) {
+            return $next($request);
+        }
+        
+        // If we get here, the user doesn't have any of the required roles
+        if ($request->expectsJson()) {
+            abort(403, 'Access forbidden');
+        }
+        
+        // Redirect based on highest role the user has
+        if (in_array('admin', $userRoles)) {
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'You do not have permission to access this page');
+        } else if (in_array('premiumuser', $userRoles)) {
+            return redirect()->route('user.homme')
+                ->with('error', 'You do not have permission to access this page');
+        } else {
+            return redirect()->route('user.homme')
+                ->with('error', 'You do not have permission to access this page');
+        }
     }
 }

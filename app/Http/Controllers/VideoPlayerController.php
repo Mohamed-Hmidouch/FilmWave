@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Series;
 use App\Models\Episode;
+use App\Models\Season; // Ajout de l'import du modèle Season
 use App\Models\Movie;
 use App\Services\SeriesService;
 use Illuminate\Support\Facades\Log;
@@ -53,29 +54,82 @@ class VideoPlayerController extends BaseController
                     abort(404, 'Épisode non trouvé dans cette série');
                 }
             } else {
-                // Par défaut, afficher le premier épisode de la série
-                $episode = $series->seasons->first()->episodes->first();
+                $firstSeason = $series->seasons()->first();
+                if (!$firstSeason) {
+                    abort(404, 'Aucune saison disponible pour cette série');
+                }
+                
+                $episode = Episode::where('series_id', $seriesId)
+                                ->where('season_number', $firstSeason->season_number)
+                                ->orderBy('episode_number')
+                                ->first();
+                                
                 if (!$episode) {
                     abort(404, 'Aucun épisode disponible pour cette série');
                 }
             }
             
             // Récupérer la saison actuelle
-            $currentSeason = $series->seasons->first(function ($season) use ($episode) {
-                return $season->episodes->contains('id', $episode->id);
-            });
+            $currentSeason = null;
+            if ($series->seasons instanceof \Illuminate\Database\Eloquent\Collection) {
+                // Si $series->seasons est une collection, on peut utiliser first()
+                $currentSeason = $series->seasons->first(function ($season) use ($episode) {
+                    return $season->episodes->contains('id', $episode->id);
+                });
+            } else {
+                // Sinon, récupérer la saison directement par le numéro de saison de l'épisode
+                $currentSeason = $series->seasons()->where('season_number', $episode->season_number)->first();
+            }
+            
+            if (!$currentSeason) {
+                // Si on n'a pas trouvé la saison, on la récupère directement par son numéro
+                $currentSeason = Season::where('series_id', $seriesId)
+                                      ->where('season_number', $episode->season_number)
+                                      ->first();
+            }
             
             if (!$currentSeason) {
                 abort(404, 'Saison non trouvée');
             }
             
             // Préparer les données pour l'affichage
+            $contentFiles = $episode->content->contentFiles ?? collect([]);
+            Log::info("Contenu de l'épisode:", [
+                'episode_id' => $episode->id,
+                'content_id' => $episode->content->id ?? 'Pas de contenu',
+                'contentFiles_count' => $contentFiles->count(),
+                'has_files' => $contentFiles->isNotEmpty()
+            ]);
+            
+            $firstFile = $contentFiles->first();
+            $filePath = $firstFile ? $firstFile->file_path : null;
+            
+            // Si le filePath est null, utiliser le file_path directement de l'épisode
+            if (!$filePath && !empty($episode->file_path)) {
+                $filePath = $episode->file_path;
+            }
+            
+            // Construction de l'URL de la vidéo avec le bon chemin pour Docker
+            if ($filePath) {
+                $videoUrl = asset('storage/' . $filePath);
+            } else {
+                $videoUrl = 'https://example.com/episode.mp4';
+            }
+            
+            // Pour débogage seulement
+            Log::info("Vidéo URL générée:", [
+                'contentFiles_count' => $contentFiles->count(),
+                'filePath' => $filePath, 
+                'episode_file_path' => $episode->file_path,
+                'videoUrl' => $videoUrl
+            ]);
+            
             $episodeData = (object)[
                 'id' => $episode->id,
                 'title' => $episode->title,
                 'thumbnail' => $episode->content->cover_image ?? 'https://via.placeholder.com/640x360',
                 'description' => $episode->content->description ?? 'Description non disponible',
-                'video_url' => $episode->content->contentFiles->first()->file_path ?? 'https://example.com/episode.mp4',
+                'video_url' => $videoUrl,
                 'season_number' => $currentSeason->season_number,
                 'episode_number' => $episode->episode_number,
                 'duration' => $episode->content->duration ?? 45,
@@ -86,27 +140,56 @@ class VideoPlayerController extends BaseController
                 'id' => $series->id,
                 'title' => $series->title,
                 'poster' => $series->content->cover_image ?? 'https://via.placeholder.com/300x450',
-                'seasons' => $series->seasons->map(function ($season) use ($currentSeason) {
-                    return (object)[
-                        'id' => $season->id,
-                        'season_number' => $season->season_number,
-                        'is_current' => $season->id === $currentSeason->id,
-                        'episodes' => $season->episodes->map(function ($episode) {
-                            return (object)[
-                                'id' => $episode->id,
-                                'title' => $episode->title,
-                                'episode_number' => $episode->episode_number,
-                                'thumbnail' => $episode->content->cover_image ?? 'https://via.placeholder.com/400x225',
-                                'duration' => $episode->content->duration ?? 45
-                            ];
-                        })
-                    ];
-                })
+                'release_year' => $series->content->release_year ?? date('Y'),
+                'age_rating' => $series->content->maturity_rating ?? '12+',
+                'episodes' => $series->episodes ?? collect([]),
+                'seasons' => $series->seasons instanceof \Illuminate\Database\Eloquent\Collection ? 
+                    $series->seasons->map(function ($season) use ($currentSeason) {
+                        return (object)[
+                            'id' => $season->id,
+                            'season_number' => $season->season_number,
+                            'is_current' => $season->id === $currentSeason->id,
+                            'episodes' => $season->episodes instanceof \Illuminate\Database\Eloquent\Collection ?
+                                $season->episodes->map(function ($episode) {
+                                    return (object)[
+                                        'id' => $episode->id,
+                                        'title' => $episode->title,
+                                        'episode_number' => $episode->episode_number,
+                                        'thumbnail' => $episode->content->cover_image ?? 'https://via.placeholder.com/400x225',
+                                        'duration' => $episode->content->duration ?? 45
+                                    ];
+                                }) : collect([])
+                        ];
+                    }) : collect([Season::find($currentSeason->id)])->map(function ($season) use ($currentSeason) {
+                        return (object)[
+                            'id' => $season->id,
+                            'season_number' => $season->season_number,
+                            'is_current' => true,
+                            'episodes' => Episode::where('series_id', $season->series_id)
+                                ->where('season_number', $season->season_number)
+                                ->get()
+                                ->map(function ($episode) {
+                                    return (object)[
+                                        'id' => $episode->id,
+                                        'title' => $episode->title,
+                                        'episode_number' => $episode->episode_number,
+                                        'thumbnail' => $episode->content->cover_image ?? 'https://via.placeholder.com/400x225',
+                                        'duration' => $episode->content->duration ?? 45
+                                    ];
+                                })
+                        ];
+                    })
             ];
             
             // Incrémenter le nombre de vues
-            $episode->content->views_count = ($episode->content->views_count ?? 0) + 1;
-            $episode->content->save();
+            if ($episode->content) {
+                // Récupérer l'objet Content directement pour éviter les problèmes de "indirect modification"
+                $content = Content::find($episode->content->id);
+                if ($content) {
+                    $content->views_count = ($content->views_count ?? 0) + 1;
+                    $content->save();
+                }
+            }
             
             // Log de visionnage
             Log::info("Épisode {$episode->id} visionné", [
@@ -115,9 +198,72 @@ class VideoPlayerController extends BaseController
                 'episode_id' => $episode->id
             ]);
             
+            // Récupérer les informations sur le prochain épisode
+            $nextEpisode = null;
+            
+            // Tenter de trouver le prochain épisode dans la même saison
+            $nextEpisode = Episode::where('series_id', $seriesId)
+                ->where('season_number', $episode->season_number)
+                ->where('episode_number', '>', $episode->episode_number)
+                ->orderBy('episode_number')
+                ->first();
+                
+            // Si pas de prochain épisode dans cette saison, chercher le premier épisode de la saison suivante
+            if (!$nextEpisode) {
+                $nextSeason = Season::where('series_id', $seriesId)
+                    ->where('season_number', '>', $episode->season_number)
+                    ->orderBy('season_number')
+                    ->first();
+                    
+                if ($nextSeason) {
+                    $nextEpisode = Episode::where('series_id', $seriesId)
+                        ->where('season_number', $nextSeason->season_number)
+                        ->orderBy('episode_number')
+                        ->first();
+                }
+            }
+            
+            // Si trouvé, préparer les données du prochain épisode pour l'affichage
+            if ($nextEpisode) {
+                $nextEpisode = (object)[
+                    'id' => $nextEpisode->id,
+                    'title' => $nextEpisode->title,
+                    'thumbnail' => $nextEpisode->content->cover_image ?? 'https://via.placeholder.com/400x225',
+                    'episode_number' => $nextEpisode->episode_number,
+                    'season_number' => $nextEpisode->season_number
+                ];
+            }
+            
+            // Récupérer la liste des saisons pour le sélecteur
+            $seasons = Season::where('series_id', $seriesId)
+                ->orderBy('season_number')
+                ->pluck('season_number')
+                ->unique()
+                ->values()
+                ->all();
+                
+            // Récupérer les épisodes de la saison courante
+            $seasonEpisodes = Episode::where('series_id', $seriesId)
+                ->where('season_number', $currentSeason->season_number)
+                ->orderBy('episode_number')
+                ->get()
+                ->map(function ($ep) {
+                    return (object)[
+                        'id' => $ep->id,
+                        'title' => $ep->title,
+                        'thumbnail' => $ep->content->cover_image ?? 'https://via.placeholder.com/400x225',
+                        'episode_number' => $ep->episode_number,
+                        'duration' => $ep->content->duration ?? '45'
+                    ];
+                });
+            
             return view('watch.episode', [
                 'episode' => $episodeData,
-                'series' => $seriesData
+                'series' => $seriesData,
+                'nextEpisode' => $nextEpisode,
+                'seasons' => $seasons,
+                'seasonEpisodes' => $seasonEpisodes,
+                'currentSeason' => $currentSeason
             ]);
             
         } catch (\Exception $e) {
@@ -161,8 +307,14 @@ class VideoPlayerController extends BaseController
             ];
             
             // Incrémenter le nombre de vues
-            $movie->content->views_count = ($movie->content->views_count ?? 0) + 1;
-            $movie->content->save();
+            if ($movie->content) {
+                // Récupérer l'objet Content directement pour éviter les problèmes de "indirect modification"
+                $content = Content::find($movie->content->id);
+                if ($content) {
+                    $content->views_count = ($content->views_count ?? 0) + 1;
+                    $content->save();
+                }
+            }
             
             // Récupérer des films similaires (même catégorie)
             $similarMovies = collect();
@@ -433,4 +585,4 @@ class VideoPlayerController extends BaseController
             return redirect()->back()->with('error', 'Une erreur est survenue lors du téléchargement');
         }
     }
-} 
+}

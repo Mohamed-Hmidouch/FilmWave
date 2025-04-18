@@ -32,4 +32,12 @@ class Episode extends Model
     {
         return asset('storage/' . $this->file_path);
     }
+
+    /**
+     * Get the content record associated with the episode.
+     */
+    public function content()
+    {
+        return $this->belongsTo(Content::class);
+    }
 }

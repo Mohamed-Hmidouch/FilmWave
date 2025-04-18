@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class CheckoutController extends Controller
-{
+{   
     public function process()
     {
    
@@ -38,6 +38,6 @@ class CheckoutController extends Controller
 
     public function cancel(Request $request)
     {
-        return view('subscription.cancel');
+        return redirect()->route('home')->with('info', 'Votre processus d\'abonnement a été annulé.');
     }
 }

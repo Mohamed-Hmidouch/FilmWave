@@ -102,4 +102,45 @@ document.addEventListener('DOMContentLoaded', function() {
             duration: 600
         });
     }
-}); 
+});
+
+document.addEventListener('alpine:init', () => {
+    // Initialize staggered animation for cards
+    const cards = document.querySelectorAll('.movie-card');
+    anime({
+        targets: cards,
+        opacity: [0, 1],
+        translateY: [20, 0],
+        scale: [0.9, 1],
+        delay: anime.stagger(100, {start: 300}),
+        easing: 'easeOutQuad',
+        duration: 500
+    });
+    
+    // Add event listeners for card interactions
+    cards.forEach(card => {
+        // Shine effect on hover
+        card.addEventListener('mouseenter', () => {
+            const shineEffect = card.querySelector('.shine-effect');
+            if (shineEffect) {
+                anime({
+                    targets: shineEffect,
+                    translateX: ['0%', '200%'],
+                    easing: 'easeInOutSine',
+                    duration: 800,
+                    delay: 200
+                });
+            }
+        });
+        
+        // Handle watch button click
+        const watchBtn = card.querySelector('.watch-btn');
+        if (watchBtn) {
+            watchBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const link = card.querySelector('a').href;
+                window.location.href = link;
+            });
+        }
+    });
+});

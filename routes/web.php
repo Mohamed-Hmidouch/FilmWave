@@ -91,6 +91,7 @@ Route::get('subscribe', [App\Http\Controllers\SubscriptionController::class, 'sh
 Route::get('subscribe/checkout', [App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout');
 
 Route::get('subscribe/checkout/cancel', [App\Http\Controllers\CheckoutController::class, 'cancel'])->name('checkout.cancel');
+Route::post('subscribe/checkout/cancel', [App\Http\Controllers\CheckoutController::class, 'cancel'])->name('checkout.cancel.post');
 Route::get('subscribe/checkout/success', [App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
 
 Route::post('subscribe/checkout', [App\Http\Controllers\CheckoutController::class, 'process'])->name('subscribe.checkout');

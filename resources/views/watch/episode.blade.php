@@ -236,7 +236,7 @@
                             <span class="w-1 h-1 bg-gray-500 rounded-full mr-2"></span>
                             <span class="mr-2">{{ $series->age_rating ?? '12+' }}</span>
                             <span class="w-1 h-1 bg-gray-500 rounded-full mr-2"></span>
-                            <span>{{ $series->seasons->count() }} saison(s)</span>
+                            <span>{{ is_object($series->seasons) && method_exists($series->seasons, 'count') ? $series->seasons->count() : '0' }} saison(s)</span>
                         </div>
                     </div>
                 </div>
@@ -289,13 +289,11 @@
                                     @timeupdate="progress = ($event.target.currentTime / $event.target.duration) * 100"
                                     controls 
                                     autoplay 
-                                    poster="{{ asset('storage/' . ($series->content->cover_image ?? '')) }}" 
+                                    poster="{{ asset('storage/' . $series->content->cover_image) }}" 
                                     class="w-full"
                                 >
-                                    @if(isset($episode->file_path) && $episode->file_path)
+                                    @if($episode->file_path)
                                         <source src="{{ asset('storage/' . $episode->file_path) }}" type="video/mp4">
-                                    @elseif(isset($episode->video_url))
-                                        <source src="{{ $episode->video_url }}" type="video/mp4">
                                     @endif
                                     Votre navigateur ne supporte pas la lecture de vidéos.
                                 </video>
@@ -429,14 +427,10 @@
                                 <span>Saison {{ $episode->season_number }}</span>
                                 <span class="mx-2">•</span>
                                 <span>Épisode {{ $episode->episode_number }}</span>
-                                @if(isset($episode->duration))
                                 <span class="mx-2">•</span>
-                                <span>{{ $episode->duration }} min</span>
-                                @endif
-                                @if(isset($episode->release_date))
+                                <span>{{ $episode->duration ?? '45' }} min</span>
                                 <span class="mx-2">•</span>
-                                <span>{{ $episode->release_date }}</span>
-                                @endif
+                                <span>{{ $episode->release_date ?? 'Date inconnue' }}</span>
                             </div>
                             
                             <!-- Episode description -->
@@ -451,12 +445,58 @@
                                 </a>
                                 @endif
                                 
-                                @if(isset($episode->file_path) && $episode->file_path)
-                                <a href="{{ route('download.episode', ['seriesId' => $series->id, 'episodeId' => $episode->id]) }}"
-                                   class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center transition-all duration-300">
-                                    <i class="fas fa-download mr-2"></i> Télécharger
-                                </a>
-                                @endif
+                                <button 
+                                    @click="$dispatch('notify', {message: 'Ajouté à votre liste', type: 'success'})"
+                                    class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center transition-all duration-300">
+                                    <i class="fas fa-plus mr-2"></i> Ma liste
+                                </button>
+                                
+                                <button 
+                                    @click="$dispatch('notify', {message: 'Vous aimez cet épisode', type: 'success'})"
+                                    class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center transition-all duration-300">
+                                    <i class="fas fa-thumbs-up mr-2"></i> J'aime
+                                </button>
+                                
+                                <div class="relative" x-data="{ open: false }">
+                                    <button 
+                                        @click="open = !open" 
+                                        class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center transition-all duration-300"
+                                    >
+                                        <i class="fas fa-share-alt mr-2"></i> Partager
+                                        <i class="fas fa-chevron-down ml-2 text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                                    </button>
+                                    <div 
+                                        x-show="open" 
+                                        @click.away="open = false"
+                                        x-transition:enter="transition ease-out duration-200" 
+                                        x-transition:enter-start="opacity-0 transform scale-95" 
+                                        x-transition:enter-end="opacity-100 transform scale-100" 
+                                        x-transition:leave="transition ease-in duration-150" 
+                                        x-transition:leave-start="opacity-100 transform scale-100" 
+                                        x-transition:leave-end="opacity-0 transform scale-95" 
+                                        class="absolute right-0 mt-2 w-48 bg-[#242424] rounded-md shadow-lg py-1 z-50"
+                                    >
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors">
+                                            <i class="fab fa-facebook mr-2"></i> Facebook
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors">
+                                            <i class="fab fa-twitter mr-2"></i> Twitter
+                                        </a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors">
+                                            <i class="fab fa-whatsapp mr-2"></i> WhatsApp
+                                        </a>
+                                        <button 
+                                            @click="
+                                                navigator.clipboard.writeText(window.location.href);
+                                                $dispatch('notify', {message: 'Lien copié !', type: 'success'});
+                                                open = false;
+                                            "
+                                            class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white transition-colors"
+                                        >
+                                            <i class="fas fa-link mr-2"></i> Copier le lien
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -550,6 +590,68 @@
                             </template>
                         </div>
                     </div>
+                    
+                    <!-- External player iframe section -->
+                    <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg mb-8">
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold mb-4 flex items-center">
+                                <i class="fas fa-external-link-alt text-film-red mr-2"></i>
+                                Lecteurs externes
+                            </h2>
+                            
+                            <div x-data="{ activePlayer: 'player1' }">
+                                <!-- Player tabs -->
+                                <div class="flex border-b border-[#333] mb-4">
+                                    <button 
+                                        @click="activePlayer = 'player1'" 
+                                        class="px-4 py-2 font-medium transition-colors"
+                                        :class="activePlayer === 'player1' ? 'text-film-red border-b-2 border-film-red' : 'text-gray-400 hover:text-white'"
+                                    >
+                                        Lecteur 1
+                                    </button>
+                                    <button 
+                                        @click="activePlayer = 'player2'" 
+                                        class="px-4 py-2 font-medium transition-colors"
+                                        :class="activePlayer === 'player2' ? 'text-film-red border-b-2 border-film-red' : 'text-gray-400 hover:text-white'"
+                                    >
+                                        Lecteur 2
+                                    </button>
+                                    <button 
+                                        @click="activePlayer = 'player3'" 
+                                        class="px-4 py-2 font-medium transition-colors"
+                                        :class="activePlayer === 'player3' ? 'text-film-red border-b-2 border-film-red' : 'text-gray-400 hover:text-white'"
+                                    >
+                                        Lecteur 3
+                                    </button>
+                                </div>
+                                
+                                <!-- Player iframes -->
+                                <div class="video-container" x-show="activePlayer === 'player1'">
+                                    <iframe 
+                                        src="{{ $episode->external_player_url ?? 'https://www.youtube.com/embed/dQw4w9WgXcQ' }}" 
+                                        frameborder="0" 
+                                        allowfullscreen
+                                    ></iframe>
+                                </div>
+                                
+                                <div class="video-container" x-show="activePlayer === 'player2'">
+                                    <iframe 
+                                        src="{{ $episode->external_player_url2 ?? 'https://player.vimeo.com/video/148751763' }}" 
+                                        frameborder="0" 
+                                        allowfullscreen
+                                    ></iframe>
+                                </div>
+                                
+                                <div class="video-container" x-show="activePlayer === 'player3'">
+                                    <iframe 
+                                        src="{{ $episode->external_player_url3 ?? 'https://www.dailymotion.com/embed/video/x84sh87' }}" 
+                                        frameborder="0" 
+                                        allowfullscreen
+                                    ></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Right column - Episodes list and download options -->
@@ -578,6 +680,17 @@
                             </div>
                         </div>
                         
+                        <!-- Download all episodes button -->
+                        <div class="p-4 border-b border-[#333]">
+                            <button 
+                                @click="$dispatch('notify', {message: 'Téléchargement de tous les épisodes en cours...', type: 'info'})"
+                                class="w-full bg-[#333] hover:bg-[#444] text-white py-2 rounded-md flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <i class="fas fa-download"></i>
+                                Télécharger tous les épisodes
+                            </button>
+                        </div>
+                        
                         <!-- Episodes list -->
                         <div x-show="isOpen" class="max-h-[600px] overflow-y-auto">
                             @foreach($seasonEpisodes as $ep)
@@ -591,7 +704,7 @@
                                    class="flex p-4 {{ $episode->id == $ep->id ? 'border-l-4 border-film-red pl-3' : 'pl-4' }}">
                                     <div class="w-16 h-9 bg-[#333] rounded overflow-hidden flex-shrink-0 mr-3">
                                         <img 
-                                            src="{{ asset('storage/' . ($ep->thumbnail ?? '')) }}" 
+                                            src="{{ asset('storage/' . ($ep->thumbnail ?? $series->poster)) }}" 
                                             alt="Thumbnail" 
                                             class="w-full h-full object-cover"
                                         >
@@ -602,9 +715,10 @@
                                                 <span class="text-sm text-gray-400">E{{ $ep->episode_number }}</span>
                                                 <h4 class="font-medium truncate">{{ $ep->title }}</h4>
                                             </div>
-                                            @if(isset($ep->duration))
-                                            <span class="text-xs text-gray-500">{{ $ep->duration }} min</span>
-                                            @endif
+                                            <span class="text-xs text-gray-500">{{ $ep->duration ?? '45' }} min</span>
+                                        </div>
+                                        <div class="mt-2 w-full bg-gray-700 h-1 rounded-full overflow-hidden">
+                                            <div class="bg-film-red h-full rounded-full" style="width: {{ $episode->id == $ep->id ? '30%' : '0%' }}"></div>
                                         </div>
                                     </div>
                                 </a>
@@ -632,6 +746,12 @@
                                     >
                                         <i class="fas fa-download"></i>
                                     </a>
+                                    <button 
+                                        @click="$dispatch('notify', {message: 'Ajouté à votre liste', type: 'success'})"
+                                        class="w-10 h-10 bg-[#333] rounded-full flex items-center justify-center text-white hover:bg-[#444] transition-colors"
+                                    >
+                                        <i class="fas fa-plus"></i>
+                                    </button>
                                 </div>
                             </div>
                             @endforeach
@@ -661,12 +781,10 @@
                                     <span class="w-24 text-gray-500">Titre:</span>
                                     <span>{{ $series->title }}</span>
                                 </div>
-                                @if(isset($series->release_year))
                                 <div class="flex">
                                     <span class="w-24 text-gray-500">Année:</span>
                                     <span>{{ $series->release_year }}</span>
                                 </div>
-                                @endif
                                 <div class="flex">
                                     <span class="w-24 text-gray-500">Saisons:</span>
                                     <span>{{ $series->seasons->count() }}</span>
@@ -675,28 +793,58 @@
                                     <span class="w-24 text-gray-500">Épisodes:</span>
                                     <span>{{ $series->episodes ? $series->episodes->count() : ($seasonEpisodes ? $seasonEpisodes->count() : 'N/A') }}</span>
                                 </div>
-                                @if(isset($series->status))
                                 <div class="flex">
                                     <span class="w-24 text-gray-500">Statut:</span>
-                                    <span>{{ $series->status }}</span>
+                                    <span>{{ $series->status ?? 'En cours' }}</span>
                                 </div>
-                                @endif
-                                @if(isset($series->rating))
                                 <div class="flex">
                                     <span class="w-24 text-gray-500">Note:</span>
                                     <span class="flex items-center">
                                         <i class="fas fa-star text-yellow-500 mr-1"></i>
-                                        {{ $series->rating }}/10
+                                        {{ $series->rating ?? '8.5' }}/10
                                     </span>
                                 </div>
-                                @endif
                             </div>
                             
-                            @if(isset($series->content) && isset($series->content->description))
                             <div class="mt-4 pt-4 border-t border-[#333]">
-                                <p class="text-gray-300 text-sm leading-relaxed">{{ $series->content->description }}</p>
+                                <p class="text-gray-300 text-sm leading-relaxed">{{ $series->content->description ?? 'Description non disponible' }}</p>
                             </div>
-                            @endif
+                        </div>
+                    </div>
+                    
+                    <!-- Recommended series -->
+                    <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-bold mb-4 flex items-center">
+                                <i class="fas fa-thumbs-up text-film-red mr-2"></i>
+                                Recommandations
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                @for ($i = 0; $i < 3; $i++)
+                                <a href="#" class="flex hover:bg-[#242424] p-2 rounded-lg transition-colors">
+                                    <div class="w-16 h-24 bg-[#333] rounded overflow-hidden flex-shrink-0 mr-3">
+                                        <img 
+                                            src="{{ asset('storage/' . $series->poster) }}" 
+                                            alt="Poster" 
+                                            class="w-full h-full object-cover"
+                                        >
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">Série similaire {{ $i + 1 }}</h4>
+                                        <div class="flex items-center text-xs text-gray-400 mt-1">
+                                            <span>{{ 2020 + $i }}</span>
+                                            <span class="mx-1">•</span>
+                                            <span>{{ rand(1, 5) }} saison(s)</span>
+                                        </div>
+                                        <div class="flex items-center text-xs text-yellow-500 mt-1">
+                                            <i class="fas fa-star mr-1"></i>
+                                            <span>{{ rand(70, 95) / 10 }}/10</span>
+                                        </div>
+                                    </div>
+                                </a>
+                                @endfor
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -730,7 +878,7 @@
             <div class="flex items-start">
                 <div class="w-16 h-9 bg-[#333] rounded overflow-hidden flex-shrink-0 mr-3">
                     <img 
-                        src="{{ asset('storage/' . ($nextEpisode->thumbnail ?? '')) }}" 
+                        src="{{ asset('storage/' . ($nextEpisode->thumbnail ?? $series->poster)) }}" 
                         alt="Next episode" 
                         class="w-full h-full object-cover"
                     >

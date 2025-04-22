@@ -45,8 +45,11 @@ Route::middleware(['auth', 'role:PremiumUser,FreeUser'])->group(function () {
     Route::get('/settings', [HomeController::class, 'settings'])->name('settings');
     
     // Routes pour le visionnage de vidéos
-    Route::get('/watch/series/{seriesId}/{episodeId?}', [VideoPlayerController::class, 'watchEpisode'])->name('watch.episode');
-    Route::get('/watch/movie/{movieId}', [VideoPlayerController::class, 'watchMovie'])->name('watch.movie');
+    Route::get('/watch/series/{seriesId}/{episodeId?}', [VideoPlayerController::class, 'watchEpisode'])->name('watch.episode')
+        ->where('seriesId', '[0-9]+')
+        ->where('episodeId', '[0-9]+');
+    Route::get('/watch/movie/{movieId}', [VideoPlayerController::class, 'watchMovie'])->name('watch.movie')
+        ->where('movieId', '[0-9]+');
     
     // Routes pour le téléchargement de vidéos
     Route::get('/download/series/{seriesId}/{episodeId}', [VideoPlayerController::class, 'downloadEpisode'])->name('download.episode');

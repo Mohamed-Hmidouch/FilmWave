@@ -36,6 +36,10 @@ class VideoPlayerController extends BaseController
     public function watchEpisode($seriesId, $episodeId = null)
     {
         try {
+            // Convertir les paramètres en entiers pour s'assurer qu'ils sont traités comme des nombres
+            $seriesId = (int)$seriesId;
+            $episodeId = $episodeId ? (int)$episodeId : null;
+            
             // Récupérer la série avec ses relations
             $series = $this->seriesRepository->findById($seriesId, ['content', 'seasons.episodes']);
             
@@ -45,6 +49,15 @@ class VideoPlayerController extends BaseController
             
             // Déterminer l'épisode à afficher
             $episode = $this->getEpisodeToDisplay($series, $episodeId);
+            
+            // Vérifier si l'épisode appartient bien à cette série
+            if ($episode->series_id != $seriesId) {
+                // Rediriger vers la bonne série si épisode trouvé mais dans la mauvaise série
+                return redirect()->route('watch.episode', [
+                    'seriesId' => $episode->series_id,
+                    'episodeId' => $episode->id
+                ]);
+            }
             
             // Récupérer la saison actuelle
             $currentSeason = $this->getCurrentSeason($series, $episode);
@@ -80,7 +93,11 @@ class VideoPlayerController extends BaseController
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Erreur lors du chargement de l\'épisode: ' . $e->getMessage());
+            Log::error('Erreur lors du chargement de l\'épisode: ' . $e->getMessage(), [
+                'seriesId' => $seriesId,
+                'episodeId' => $episodeId,
+                'exception' => $e
+            ]);
             abort(500, 'Une erreur est survenue lors du chargement de l\'épisode');
         }
     }
@@ -95,28 +112,40 @@ class VideoPlayerController extends BaseController
     private function getEpisodeToDisplay($series, $episodeId = null)
     {
         if ($episodeId) {
-            // Récupérer l'épisode spécifié
-            $episode = Episode::with('content')->findOrFail($episodeId);
-            if (!$episode || !$series->seasons->flatMap->episodes->contains('id', $episode->id)) {
-                abort(404, 'Épisode non trouvé dans cette série');
+            try {
+                // Récupérer l'épisode spécifié
+                $episode = Episode::with('content')->findOrFail($episodeId);
+                
+                // Vérifier si l'épisode appartient à la série spécifiée
+                // Cette vérification n'échoue pas intentionnellement pour permettre la redirection
+                return $episode;
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                // Si l'épisode n'existe pas, utiliser le premier épisode de la série
+                Log::warning('Épisode non trouvé, utilisation du premier épisode de la série', [
+                    'series_id' => $series->id,
+                    'requested_episode_id' => $episodeId
+                ]);
+                
+                // On continue vers le code ci-dessous pour trouver le premier épisode
             }
-            return $episode;
-        } else {
-            $firstSeason = $series->seasons()->first();
-            if (!$firstSeason) {
-                abort(404, 'Aucune saison disponible pour cette série');
-            }
-            
-            $episode = Episode::where('series_id', $series->id)
-                            ->where('season_number', $firstSeason->season_number)
-                            ->orderBy('episode_number')
-                            ->first();
-                            
-            if (!$episode) {
-                abort(404, 'Aucun épisode disponible pour cette série');
-            }
-            return $episode;
         }
+        
+        // Si aucun épisode spécifié ou épisode non trouvé, utiliser le premier épisode
+        $firstSeason = $series->seasons()->first();
+        if (!$firstSeason) {
+            abort(404, 'Aucune saison disponible pour cette série');
+        }
+        
+        $episode = Episode::where('series_id', $series->id)
+                        ->where('season_number', $firstSeason->season_number)
+                        ->orderBy('episode_number')
+                        ->first();
+                        
+        if (!$episode) {
+            abort(404, 'Aucun épisode disponible pour cette série');
+        }
+        
+        return $episode;
     }
 
     /**

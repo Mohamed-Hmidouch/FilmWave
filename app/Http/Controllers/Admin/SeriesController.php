@@ -92,7 +92,35 @@ class SeriesController extends BaseController
      */
     public function edit(string $id)
     {
-        //
+        try {
+            // Récupérer la série avec toutes ses relations
+            $series = $this->seriesService->findSeriesById(
+                $id, 
+                ['content', 'content.categories', 'content.tags', 'seasons', 'episodes', 'actors']
+            );
+            
+            if (!$series) {
+                return redirect()->route('admin.series.index')
+                    ->with('error', 'Série non trouvée.');
+            }
+            
+            // Récupérer les catégories sélectionnées
+            $selectedCategory = $series->content->categories->first();
+            
+            // Récupérer les tags sélectionnés
+            $selectedTags = $series->content->tags->pluck('name')->toArray();
+            
+            // Récupérer les acteurs sélectionnés
+            $selectedActors = $series->actors->pluck('name')->toArray();
+            
+            // Récupérer toutes les séries disponibles pour l'affectation d'épisodes
+            $allSeries = $this->seriesService->getAllSeries();
+            
+            return view('admin.series.edit', compact('series', 'selectedCategory', 'selectedTags', 'selectedActors', 'allSeries'));
+        } catch (\Exception $e) {
+            return redirect()->route('admin.series.index')
+                ->with('error', 'Erreur lors du chargement de la série: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -100,10 +128,39 @@ class SeriesController extends BaseController
      * 
      * @param Request $request
      * @param string $id
+     * @param SeriesValidator $validator
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id, SeriesValidator $validator)
     {
-        //
+        try {
+            // Vérifier si la série existe
+            $series = $this->seriesService->findSeriesById($id);
+            
+            if (!$series) {
+                return redirect()->route('admin.series.index')
+                    ->with('error', 'Série non trouvée.');
+            }
+            
+            // Préparation des données avec notre validateur injecté
+            $data = $validator->getSeriesData();
+            
+            // Mise à jour de la série avec toutes ses relations
+            $updatedSeries = $this->seriesService->updateSeries($id, $data);
+            
+            if ($updatedSeries) {
+                return redirect()->route('admin.series.index')
+                    ->with('success', 'Série mise à jour avec succès.');
+            } else {
+                return redirect()->back()
+                    ->with('error', 'Erreur lors de la mise à jour de la série.')
+                    ->withInput();
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Erreur lors de la mise à jour de la série: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**

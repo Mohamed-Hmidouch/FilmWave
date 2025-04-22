@@ -89,6 +89,16 @@ class SeriesRepository implements SeriesRepositoryInterface
                 $series->actors()->attach($data['actors']);
             }
 
+            // Créer automatiquement des objets Season pour cette série
+            $numberOfSeasons = $data['seasons'] ?? 1;
+            for ($i = 1; $i <= $numberOfSeasons; $i++) {
+                $series->seasons()->create([
+                    'season_number' => $i,
+                    'title' => 'Saison ' . $i,
+                    'release_date' => now(),
+                ]);
+            }
+
             // Create episodes
             if (!empty($data['episodes'])) {
                 foreach ($data['episodes'] as $episodeData) {
@@ -103,7 +113,7 @@ class SeriesRepository implements SeriesRepositoryInterface
                 }
             }
 
-            return $series->load(['content', 'episodes', 'actors']);
+            return $series->load(['content', 'episodes', 'actors', 'seasons']);
         });
     }
 
@@ -117,11 +127,158 @@ class SeriesRepository implements SeriesRepositoryInterface
     public function update(array $data, $id): ?Series
     {
         $series = Series::find($id);
-        if ($series) {
-            $series->update($data);
-            return $series;
+        if (!$series) {
+            return null;
         }
-        return null;
+
+        return DB::transaction(function () use ($series, $data, $id) {
+            // Mise à jour des données de base de la série
+            if (isset($data['title']) && $series->content) {
+                // Mettre à jour le titre seulement dans le contenu associé
+                $series->content->title = $data['title'];
+                $series->content->save();
+            }
+
+            // Données qui existent vraiment dans la table series
+            $seriesDataToUpdate = [];
+            
+            if (isset($data['total_episodes'])) {
+                $seriesDataToUpdate['total_episodes'] = $data['total_episodes'];
+            }
+
+            if (isset($data['views_count'])) {
+                $seriesDataToUpdate['views_count'] = $data['views_count'];
+            }
+            
+            // Mise à jour du nombre de saisons si spécifié
+            if (isset($data['seasons'])) {
+                $seriesDataToUpdate['seasons'] = $data['seasons'];
+                
+                // Mettre à jour les objets Season
+                $currentSeasonCount = $series->seasons()->count();
+                $newSeasonCount = $data['seasons'];
+                
+                // Si on a augmenté le nombre de saisons, créer de nouvelles saisons
+                if ($newSeasonCount > $currentSeasonCount) {
+                    for ($i = $currentSeasonCount + 1; $i <= $newSeasonCount; $i++) {
+                        $series->seasons()->create([
+                            'season_number' => $i,
+                            'title' => 'Saison ' . $i,
+                            'release_date' => now(),
+                        ]);
+                    }
+                }
+                // Si on a réduit le nombre de saisons, supprimer les saisons en trop
+                else if ($newSeasonCount < $currentSeasonCount) {
+                    $series->seasons()->where('season_number', '>', $newSeasonCount)->delete();
+                }
+            }
+            
+            // Vérifier si la série a au moins une saison, sinon en créer une
+            if ($series->seasons()->count() == 0) {
+                $series->seasons()->create([
+                    'season_number' => 1,
+                    'title' => 'Saison 1',
+                    'release_date' => now(),
+                ]);
+                
+                if (!isset($seriesDataToUpdate['seasons'])) {
+                    $seriesDataToUpdate['seasons'] = 1;
+                }
+            }
+            
+            // Mise à jour des attributs de série si nécessaire
+            if (!empty($seriesDataToUpdate)) {
+                $series->update($seriesDataToUpdate);
+            }
+
+            // Mettre à jour les tags
+            if (isset($data['tags']) && $series->content) {
+                $series->content->tags()->sync($data['tags']);
+            }
+
+            // Mettre à jour les catégories
+            if (isset($data['categories']) && $series->content) {
+                $series->content->categories()->sync($data['categories']);
+            }
+
+            // Mettre à jour les acteurs
+            if (isset($data['actors'])) {
+                $series->actors()->sync($data['actors']);
+            }
+
+            // Mettre à jour les descriptions
+            if (isset($data['description']) && $series->content) {
+                $series->content->description = $data['description'];
+                $series->content->save();
+            }
+
+            // Mettre à jour l'image de couverture
+            if (isset($data['cover_image']) && $series->content) {
+                $series->content->cover_image = $data['cover_image'];
+                $series->content->save();
+            }
+
+            // Traiter les épisodes
+            if (isset($data['episodes'])) {
+                foreach ($data['episodes'] as $episodeData) {
+                    if (isset($episodeData['id']) && !empty($episodeData['id'])) {
+                        // Mise à jour d'un épisode existant
+                        $episode = Episode::find($episodeData['id']);
+                        if ($episode) {
+                            $episodeUpdate = [
+                                'title' => $episodeData['title'],
+                                'episode_number' => $episodeData['episode_number'] ?? $episodeData['number'] ?? $episode->episode_number,
+                                'season_number' => $episodeData['season_number'] ?? $episode->season_number,
+                            ];
+
+                            // Mise à jour de la série d'appartenance
+                            if (isset($episodeData['series_id'])) {
+                                $episodeUpdate['series_id'] = $episodeData['series_id'] ?: null;
+                            }
+
+                            // Mise à jour du fichier vidéo si fourni
+                            if (isset($episodeData['file_path'])) {
+                                $episodeUpdate['file_path'] = $episodeData['file_path'];
+                            }
+
+                            $episode->update($episodeUpdate);
+                        }
+                    } else {
+                        // Création d'un nouvel épisode
+                        $episodeCreate = [
+                            'title' => $episodeData['title'],
+                            'episode_number' => $episodeData['episode_number'] ?? $episodeData['number'] ?? 1,
+                            'season_number' => $episodeData['season_number'] ?? 1,
+                            'release_date' => $episodeData['release_date'] ?? now(),
+                            'views_count' => $episodeData['views_count'] ?? 0,
+                        ];
+
+                        // Définir la série d'appartenance
+                        if (isset($episodeData['series_id']) && !empty($episodeData['series_id'])) {
+                            // Si une série spécifique est définie
+                            $episodeCreate['series_id'] = $episodeData['series_id'];
+                            Episode::create($episodeCreate);
+                        } else {
+                            // Si aucune série n'est définie, l'ajouter à la série actuelle
+                            $series->episodes()->create($episodeCreate);
+                        }
+
+                        // Gérer le fichier vidéo
+                        if (isset($episodeData['file_path'])) {
+                            $episodeCreate['file_path'] = $episodeData['file_path'];
+                        }
+                    }
+                }
+            }
+
+            // Mettre à jour le nombre total d'épisodes pour cette série
+            $totalEpisodes = $series->episodes()->count();
+            $series->total_episodes = $totalEpisodes;
+            $series->save();
+
+            return $series->load(['content', 'content.categories', 'content.tags', 'episodes', 'actors', 'seasons']);
+        });
     }
 
     /**

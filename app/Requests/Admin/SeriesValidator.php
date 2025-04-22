@@ -148,6 +148,16 @@ class SeriesValidator extends BaseRequestForm
                 'release_date' => now(),
                 'views_count' => 0,
             ];
+            
+            // Ajouter l'ID de la série si spécifié
+            if (isset($episodeData['series_id']) && !empty($episodeData['series_id'])) {
+                $episode['series_id'] = $episodeData['series_id'];
+            }
+            
+            // Ajouter l'ID de l'épisode s'il s'agit d'une mise à jour
+            if (isset($episodeData['id']) && !empty($episodeData['id'])) {
+                $episode['id'] = $episodeData['id'];
+            }
 
             // Traitement du fichier vidéo
             if (isset($episodeData['video']) && $episodeData['video']) {

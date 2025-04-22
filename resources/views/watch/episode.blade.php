@@ -363,7 +363,7 @@
                                                     x-transition:leave-end="opacity-0 transform scale-95" 
                                                     class="absolute right-0 bottom-full mb-2 w-48 bg-[#242424] rounded-md shadow-lg py-1 z-50"
                                                 >
-                                                    @if(isset($episode->content) && isset($episode->content->contentFiles) && $episode->content->contentFiles->count() > 1)
+                                                    @if(isset($episode->content) && isset($episode->content->contentFiles) && is_object($episode->content->contentFiles) && method_exists($episode->content->contentFiles, 'count') && $episode->content->contentFiles->count() > 1)
                                                         @foreach($episode->content->contentFiles as $file)
                                                             <a 
                                                                 href="{{ route('download.episode', ['seriesId' => $series->id, 'episodeId' => $episode->id, 'quality' => $file->quality]) }}" 
@@ -591,67 +591,6 @@
                         </div>
                     </div>
                     
-                    <!-- External player iframe section -->
-                    <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg mb-8">
-                        <div class="p-6">
-                            <h2 class="text-xl font-bold mb-4 flex items-center">
-                                <i class="fas fa-external-link-alt text-film-red mr-2"></i>
-                                Lecteurs externes
-                            </h2>
-                            
-                            <div x-data="{ activePlayer: 'player1' }">
-                                <!-- Player tabs -->
-                                <div class="flex border-b border-[#333] mb-4">
-                                    <button 
-                                        @click="activePlayer = 'player1'" 
-                                        class="px-4 py-2 font-medium transition-colors"
-                                        :class="activePlayer === 'player1' ? 'text-film-red border-b-2 border-film-red' : 'text-gray-400 hover:text-white'"
-                                    >
-                                        Lecteur 1
-                                    </button>
-                                    <button 
-                                        @click="activePlayer = 'player2'" 
-                                        class="px-4 py-2 font-medium transition-colors"
-                                        :class="activePlayer === 'player2' ? 'text-film-red border-b-2 border-film-red' : 'text-gray-400 hover:text-white'"
-                                    >
-                                        Lecteur 2
-                                    </button>
-                                    <button 
-                                        @click="activePlayer = 'player3'" 
-                                        class="px-4 py-2 font-medium transition-colors"
-                                        :class="activePlayer === 'player3' ? 'text-film-red border-b-2 border-film-red' : 'text-gray-400 hover:text-white'"
-                                    >
-                                        Lecteur 3
-                                    </button>
-                                </div>
-                                
-                                <!-- Player iframes -->
-                                <div class="video-container" x-show="activePlayer === 'player1'">
-                                    <iframe 
-                                        src="{{ $episode->external_player_url ?? 'https://www.youtube.com/embed/dQw4w9WgXcQ' }}" 
-                                        frameborder="0" 
-                                        allowfullscreen
-                                    ></iframe>
-                                </div>
-                                
-                                <div class="video-container" x-show="activePlayer === 'player2'">
-                                    <iframe 
-                                        src="{{ $episode->external_player_url2 ?? 'https://player.vimeo.com/video/148751763' }}" 
-                                        frameborder="0" 
-                                        allowfullscreen
-                                    ></iframe>
-                                </div>
-                                
-                                <div class="video-container" x-show="activePlayer === 'player3'">
-                                    <iframe 
-                                        src="{{ $episode->external_player_url3 ?? 'https://www.dailymotion.com/embed/video/x84sh87' }}" 
-                                        frameborder="0" 
-                                        allowfullscreen
-                                    ></iframe>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 
                 <!-- Right column - Episodes list and download options -->

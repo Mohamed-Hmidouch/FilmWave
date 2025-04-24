@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class CommentController extends BaseController
 {
@@ -31,6 +32,11 @@ class CommentController extends BaseController
      */
     public function index(Request $request, $contentId)
     {
+        // Vérifier si l'utilisateur peut voir les commentaires
+        if (Auth::check() && Gate::denies('view-comments')) {
+            return redirect()->back()->with('error', 'Cette fonctionnalité est réservée aux utilisateurs premium');
+        }
+        
         $comments = $this->commentService->getContentComments($contentId);
         
         if ($request->ajax()) {
@@ -49,6 +55,11 @@ class CommentController extends BaseController
     public function store(Request $request, CommentValidator $validator)
     {
         Log::info('Comment store method called', $request->all());
+        
+        // Vérifier si l'utilisateur peut ajouter des commentaires
+        if (Gate::denies('add-comment')) {
+            return redirect()->back()->with('error', 'Seuls les utilisateurs premium peuvent ajouter des commentaires');
+        }
         
         // Utiliser directement le validateur personnalisé
         if (!$validator->isStatus()) {
@@ -159,6 +170,11 @@ class CommentController extends BaseController
     {
         Log::info('Comment delete method called', ['comment_id' => $id, 'user_id' => Auth::id()]);
         
+        // Vérifier si l'utilisateur peut ajouter des commentaires
+        if (Gate::denies('add-comment')) {
+            return redirect()->back()->with('error', 'Seuls les utilisateurs premium peuvent gérer des commentaires');
+        }
+        
         try {
             $deleted = $this->commentService->delete($id, Auth::id());
 
@@ -191,6 +207,11 @@ class CommentController extends BaseController
     public function update(Request $request, CommentValidator $validator, $id)
     {
         Log::info('Comment update method called', ['comment_id' => $id, 'user_id' => Auth::id()]);
+        
+        // Vérifier si l'utilisateur peut ajouter des commentaires
+        if (Gate::denies('add-comment')) {
+            return redirect()->back()->with('error', 'Seuls les utilisateurs premium peuvent gérer des commentaires');
+        }
         
         // Utiliser directement le validateur personnalisé
         if (!$validator->isStatus()) {

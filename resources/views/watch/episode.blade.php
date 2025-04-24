@@ -449,17 +449,39 @@
                                 </a>
                                 @endif
                                 
+                                @can('add-to-playlist')
                                 <button 
                                     @click="$dispatch('notify', {message: 'Ajouté à votre liste', type: 'success'})"
                                     class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center transition-all duration-300">
                                     <i class="fas fa-plus mr-2"></i> Ma liste
                                 </button>
+                                @else
+                                <button 
+                                    @click="$dispatch('notify', {message: 'Fonctionnalité réservée aux membres Premium', type: 'warning'})"
+                                    class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center transition-all duration-300 relative group">
+                                    <i class="fas fa-plus mr-2"></i> <span class="flex items-center">Ma liste <i class="fas fa-crown text-yellow-400 ml-2 text-xs"></i></span>
+                                    <span class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                        Fonctionnalité Premium
+                                    </span>
+                                </button>
+                                @endcan
                                 
+                                @can('rate-episode')
                                 <button 
                                     @click="$dispatch('notify', {message: 'Vous aimez cet épisode', type: 'success'})"
                                     class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center transition-all duration-300">
                                     <i class="fas fa-thumbs-up mr-2"></i> J'aime
                                 </button>
+                                @else
+                                <button 
+                                    @click="$dispatch('notify', {message: 'Fonctionnalité réservée aux membres Premium', type: 'warning'})"
+                                    class="bg-[#333] hover:bg-[#444] text-white px-5 py-2.5 rounded-md flex items-center transition-all duration-300 relative group">
+                                    <i class="fas fa-thumbs-up mr-2"></i> <span class="flex items-center">J'aime <i class="fas fa-crown text-yellow-400 ml-2 text-xs"></i></span>
+                                    <span class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                                        Fonctionnalité Premium
+                                    </span>
+                                </button>
+                                @endcan
                                 
                                 <div class="relative" x-data="{ open: false }">
                                     <button 
@@ -506,6 +528,7 @@
                     </div>
                     
                     <!-- Comments section -->
+                    @can('view-comments')
                     <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg mb-8" id="comments-section">
                         <div class="p-6">
                             <h2 class="text-xl font-bold mb-6 flex items-center">
@@ -515,6 +538,7 @@
                             
                             <!-- Comment form -->
                             @auth
+                            @can('add-comment')
                             <form action="{{ route('comments.store') }}" method="POST" class="mb-6">
                                 @csrf
                                 <input type="hidden" name="episode_id" value="{{ $episode->id }}">
@@ -548,6 +572,14 @@
                             @else
                             <div class="text-center py-4 mb-4 bg-[#242424] rounded-lg">
                                 <p class="text-gray-300">
+                                    <a href="{{ route('subscribe') }}" class="text-film-red hover:underline">Passez à un abonnement Premium</a> 
+                                    pour pouvoir commenter
+                                </p>
+                            </div>
+                            @endcan
+                            @else
+                            <div class="text-center py-4 mb-4 bg-[#242424] rounded-lg">
+                                <p class="text-gray-300">
                                     <a href="{{ route('login') }}" class="text-film-red hover:underline">Connectez-vous</a> 
                                     pour ajouter un commentaire
                                 </p>
@@ -573,6 +605,20 @@
                             </div>
                         </div>
                     </div>
+                    @else
+                    <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg mb-8">
+                        <div class="p-6 text-center">
+                            <h2 class="text-xl font-bold mb-4 flex items-center justify-center">
+                                <i class="fas fa-crown text-yellow-500 mr-2"></i>
+                                Fonctionnalité Premium
+                            </h2>
+                            <p class="text-gray-300 mb-4">La section des commentaires est disponible uniquement pour les utilisateurs premium.</p>
+                            <a href="{{ route('subscribe') }}" class="inline-block bg-film-red hover:bg-red-700 text-white px-6 py-3 rounded-md transition-all duration-300 hover:shadow-lg">
+                                Passer à l'abonnement Premium
+                            </a>
+                        </div>
+                    </div>
+                    @endcan
                 </div>
                 <!-- Right column - Episodes list and download options -->
                 <div class="lg:w-1/3">

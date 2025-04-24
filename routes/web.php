@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\SeriesController;
 use App\Http\Controllers\Admin\CategorieController;
 use App\Http\Controllers\VideoPlayerController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\PlaylistController;
+use App\Http\Controllers\RatingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,5 +113,26 @@ Route::post('subscribe/checkout/cancel', [App\Http\Controllers\CheckoutControlle
 Route::get('subscribe/checkout/success', [App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
 
 Route::post('subscribe/checkout', [App\Http\Controllers\CheckoutController::class, 'process'])->name('subscribe.checkout');
+
+// Routes pour les playlists (réservées aux utilisateurs premium)
+Route::middleware(['auth', 'role:PremiumUser'])->group(function () {
+    Route::get('/playlists', [PlaylistController::class, 'index'])->name('playlists.index');
+    Route::get('/playlists/create', [PlaylistController::class, 'create'])->name('playlists.create');
+    Route::post('/playlists', [PlaylistController::class, 'store'])->name('playlists.store');
+    Route::get('/playlists/{playlist}', [PlaylistController::class, 'show'])->name('playlists.show');
+    Route::get('/playlists/{playlist}/edit', [PlaylistController::class, 'edit'])->name('playlists.edit');
+    Route::put('/playlists/{playlist}', [PlaylistController::class, 'update'])->name('playlists.update');
+    Route::delete('/playlists/{playlist}', [PlaylistController::class, 'destroy'])->name('playlists.destroy');
+    Route::post('/playlists/add', [PlaylistController::class, 'addToPlaylist'])->name('playlists.add');
+    Route::post('/playlists/remove', [PlaylistController::class, 'removeFromPlaylist'])->name('playlists.remove');
+    
+    // Routes pour les évaluations
+    Route::post('/ratings', [RatingController::class, 'rate'])->name('ratings.rate');
+    Route::delete('/ratings/{contentId}', [RatingController::class, 'destroy'])->name('ratings.destroy');
+});
+
+// Routes publiques pour obtenir les évaluations
+Route::get('/ratings/user/{contentId}', [RatingController::class, 'getUserRating'])->name('ratings.user');
+Route::get('/ratings/average/{contentId}', [RatingController::class, 'getAverageRating'])->name('ratings.average');
 
 

@@ -43,6 +43,16 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    /**
+     * Vérifie si l'utilisateur a un rôle premium
+     *
+     * @return bool
+     */
+    public function isPremium()
+    {
+        return $this->roles()->where('name', 'PremiumUser')->exists();
+    }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class);
@@ -54,15 +64,9 @@ class User extends Authenticatable
         return $this->hasMany(Playlist::class);
     }
 
-    public function subscription()
-    {
-        return $this->belongsTo(Subscription::class);
-    }
 
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
+
+
 
     public function comments()
 {

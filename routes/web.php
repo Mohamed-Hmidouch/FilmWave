@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\MovieController;
 use App\Http\Controllers\Admin\SeriesController;
 use App\Http\Controllers\Admin\CategorieController;
 use App\Http\Controllers\VideoPlayerController;
+use App\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,18 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Routes publiques pour la présentation des séries, visibles sans être connecté
+Route::get('/series/{seriesId}', [VideoPlayerController::class, 'showSeries'])->name('series.show');
+
+// Routes pour les commentaires
+Route::get('/content/{contentId}/comments', [CommentController::class, 'index'])->name('comments.index');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::put('/comments/{id}', [CommentController::class, 'update'])->name('comments.update');
+    Route::delete('/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
+});
+
+// Routes pour le visionnage de vidéos (nécessite authentification)
 Route::middleware(['auth', 'role:PremiumUser,FreeUser'])->group(function () {
     Route::get('/my-list', [HomeController::class, 'myList'])->name('my-list');
     Route::get('/profile', [HomeController::class, 'profile'])->name('profile');

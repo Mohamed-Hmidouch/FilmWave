@@ -104,6 +104,9 @@
                 <form id="login-form" action="{{ route('login') }}" method="POST" class="space-y-6">
                     @csrf
                     
+                    <!-- Champ caché pour l'URL de redirection -->
+                    <input type="hidden" name="redirect_to" id="redirect_to" value="">
+                    
                     <!-- Email field -->
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
@@ -255,51 +258,80 @@
     </div>
 
     <script>
-        // Background image slider
+        // Fonction pour récupérer les paramètres de l'URL
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            const bgSlider = document.getElementById('bg-slider');
-            const images = [
-                'https://image.tmdb.org/t/p/original/56v2KjBlU4XaOv9rVYEQypROD7P.jpg', // Stranger Things
-                'https://image.tmdb.org/t/p/original/suopoADq0k8YZr4dQXcU6pToj6s.jpg', // Game of Thrones
-                'https://image.tmdb.org/t/p/original/p7fwCa0PhqHPxAWlKHyJjZ6Jrhx.jpg', // Breaking Bad
-                'https://image.tmdb.org/t/p/original/iHSwvRVsRyxpX7FE7GbviaDvgGZ.jpg', // The Mandalorian
-                'https://image.tmdb.org/t/p/original/reEMJA1uzscCbkpeRJeTT2bjqUp.jpg'  // Money Heist
-            ];
+            // Récupérer l'URL de redirection depuis les paramètres de l'URL ou du localStorage
+            var redirectUrl = getUrlParameter('redirect') || localStorage.getItem('redirectAfterLogin') || '';
             
-            // Create image elements
-            images.forEach((src, index) => {
-                const div = document.createElement('div');
-                div.className = 'bg-image';
-                div.style.backgroundImage = `url(${src})`;
-                if (index === 0) div.classList.add('active');
-                bgSlider.appendChild(div);
-            });
+            // Si on a une URL de redirection, on la met dans le champ caché
+            if (redirectUrl) {
+                document.getElementById('redirect_to').value = redirectUrl;
+                console.log('URL de redirection après login:', redirectUrl);
+            }
             
-            // Image rotation
-            let currentIndex = 0;
-            setInterval(() => {
-                const bgImages = document.querySelectorAll('.bg-image');
-                bgImages[currentIndex].classList.remove('active');
-                currentIndex = (currentIndex + 1) % bgImages.length;
-                bgImages[currentIndex].classList.add('active');
-            }, 5000);
-            
-            // Password toggle functionality
-            const passwordInput = document.getElementById('password');
-            const toggleButton = document.getElementById('toggle-password');
-            const passwordIcon = document.getElementById('password-icon');
-            
-            toggleButton.addEventListener('click', function() {
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
+            // Toggle password visibility
+            document.getElementById('toggle-password').addEventListener('click', function() {
+                var passwordField = document.getElementById('password');
+                var passwordIcon = document.getElementById('password-icon');
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
                     passwordIcon.classList.remove('fa-eye');
                     passwordIcon.classList.add('fa-eye-slash');
                 } else {
-                    passwordInput.type = 'password';
+                    passwordField.type = 'password';
                     passwordIcon.classList.remove('fa-eye-slash');
                     passwordIcon.classList.add('fa-eye');
                 }
             });
+            
+            // Background image slider
+            const backgroundImages = [
+                'https://assets.nflxext.com/ffe/siteui/vlv3/c38a2d52-138e-48a3-ab68-36787ece0b57/ebd97322-14fd-4a46-9bda-ab40bbf2ba83/FR-fr-20240101-popsignuptwoweeks-perspective_alpha_website_large.jpg',
+                'https://img.freepik.com/premium-photo/woman-using-streaming-service-watch-movies-series-living-room-generative-ai_162350-1299.jpg',
+                'https://cdn.mos.cms.futurecdn.net/Qay3UT9Xq35pgKbK5qbJWm.jpg',
+                'https://www.xtrafondos.com/wallpapers/vertical/peaky-blinders-temporada-final-9454.jpg'
+            ];
+            
+            const slider = document.getElementById('bg-slider');
+            
+            // Create the initial slides
+            backgroundImages.forEach((url, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'bg-image';
+                slide.style.backgroundImage = `url(${url})`;
+                
+                // Make the first slide active
+                if (index === 0) {
+                    slide.classList.add('active');
+                }
+                
+                slider.appendChild(slide);
+            });
+            
+            // Set up the slideshow
+            let currentSlide = 0;
+            
+            setInterval(() => {
+                // Get all slides
+                const slides = document.querySelectorAll('.bg-image');
+                
+                // Remove active class from current slide
+                slides[currentSlide].classList.remove('active');
+                
+                // Move to the next slide
+                currentSlide = (currentSlide + 1) % slides.length;
+                
+                // Add active class to the new current slide
+                slides[currentSlide].classList.add('active');
+            }, 5000);
         });
     </script>
 </body>

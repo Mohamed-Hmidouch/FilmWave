@@ -8,6 +8,7 @@ use App\Repositories\Interfaces\TagRepositoryInterface;
 use App\Repositories\TagRepository;
 use App\Repositories\Interfaces\CategoryRepositoryInterface;
 use App\Repositories\CategoryRepository;
+use App\Services\CommentService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
         
         // Lier l'interface CategoryRepositoryInterface à l'implémentation CategoryRepository
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
+        
+        // Enregistrer le service de commentaires
+        $this->app->singleton(CommentService::class, function ($app) {
+            return new CommentService();
+        });
     }
 
     /**

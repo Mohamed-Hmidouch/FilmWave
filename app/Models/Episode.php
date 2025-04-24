@@ -17,7 +17,8 @@ class Episode extends Model
         'episode_number',
         'file_path',
         'release_date',
-        'views_count'
+        'views_count',
+        'content_id'
     ];    
 
     public function series()

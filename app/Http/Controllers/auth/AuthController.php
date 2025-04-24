@@ -32,7 +32,12 @@ class AuthController extends BaseController
         return $this->errorRedirect('register', [], 'Registration failed. Please try again.');
     }
 
-
+    /**
+     * Handle a login request to the application.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function login(LoginUserValidator $loginUserValidator)
     {
         if(!empty($loginUserValidator->getErrors()))
@@ -41,11 +46,18 @@ class AuthController extends BaseController
         }
         
         $credentials = $loginUserValidator->request()->only('email', 'password');
+        $redirectTo = $loginUserValidator->request()->input('redirect_to');
         
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $roles = $user->roles()->get();
             $role = $roles->isNotEmpty() ? $roles->first()->name : 'user';
+            
+            // Si une URL de redirection est spécifiée, y rediriger l'utilisateur
+            if ($redirectTo) {
+                return redirect()->to($redirectTo);
+            }
+            
             switch ($role) {
                 case 'admin':
                     return $this->successRedirect('admin.dashboard', [], 'Login successful!');

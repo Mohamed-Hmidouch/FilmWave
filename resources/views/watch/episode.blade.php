@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <!-- Importer Auth pour la vérification d'authentification -->
+    @php
+        use Illuminate\Support\Facades\Auth;
+    @endphp
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -502,7 +506,7 @@
                     </div>
                     
                     <!-- Comments section -->
-                    <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg mb-8" x-data="{ newComment: '', comments: [] }">
+                    <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg mb-8" id="comments-section">
                         <div class="p-6">
                             <h2 class="text-xl font-bold mb-6 flex items-center">
                                 <i class="fas fa-comments text-film-red mr-2"></i>
@@ -510,36 +514,30 @@
                             </h2>
                             
                             <!-- Comment form -->
-                            <form @submit.prevent="
-                                comments.unshift({
-                                    id: Date.now(),
-                                    user: 'Utilisateur',
-                                    avatar: 'https://ui-avatars.com/api/?name=U&background=E50914&color=fff',
-                                    content: newComment,
-                                    date: 'À l\'instant',
-                                    likes: 0,
-                                    isLiked: false
-                                });
-                                newComment = '';
-                                $dispatch('notify', {message: 'Commentaire ajouté !', type: 'success'});
-                            " class="mb-6">
+                            @auth
+                            <form action="{{ route('comments.store') }}" method="POST" class="mb-6">
+                                @csrf
+                                <input type="hidden" name="episode_id" value="{{ $episode->id }}">
+                                <input type="hidden" name="series_id" value="{{ $series->id }}">
                                 <div class="flex items-start gap-3">
                                     <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                                        <img src="https://ui-avatars.com/api/?name=U&background=E50914&color=fff" alt="Avatar" class="w-full h-full object-cover">
+                                        <img src="https://ui-avatars.com/api/?name={{ substr(Auth::user()->name, 0, 1) }}&background=E50914&color=fff" alt="Avatar" class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-grow">
-                                        <textarea 
-                                            x-model="newComment"
+                                        <textarea
+                                            name="body"
                                             placeholder="Ajouter un commentaire..."
                                             class="w-full bg-[#242424] border border-[#333] rounded-md p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-film-red resize-none"
                                             rows="3"
+                                            required
                                         ></textarea>
+                                        @error('body')
+                                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                        @enderror
                                         <div class="flex justify-end mt-2">
-                                            <button 
+                                            <button
                                                 type="submit" 
                                                 class="bg-film-red hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors duration-300"
-                                                :disabled="!newComment.trim()"
-                                                :class="{ 'opacity-50 cursor-not-allowed': !newComment.trim() }"
                                             >
                                                 Publier
                                             </button>
@@ -547,52 +545,35 @@
                                     </div>
                                 </div>
                             </form>
+                            @else
+                            <div class="text-center py-4 mb-4 bg-[#242424] rounded-lg">
+                                <p class="text-gray-300">
+                                    <a href="{{ route('login') }}" class="text-film-red hover:underline">Connectez-vous</a> 
+                                    pour ajouter un commentaire
+                                </p>
+                            </div>
+                            @endauth
                             
                             <!-- Comments list -->
-                            <template x-if="comments.length === 0">
-                                <div class="text-center py-8 text-gray-400">
-                                    <i class="fas fa-comments text-4xl mb-3 opacity-30"></i>
-                                    <p>Soyez le premier à commenter cet épisode</p>
-                                </div>
-                            </template>
-                            
-                            <template x-for="comment in comments" :key="comment.id">
-                                <div class="border-t border-[#333] py-4">
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                                            <img :src="comment.avatar" alt="Avatar" class="w-full h-full object-cover">
-                                        </div>
-                                        <div class="flex-grow">
-                                            <div class="flex items-center justify-between">
-                                                <div>
-                                                    <span class="font-medium" x-text="comment.user"></span>
-                                                    <span class="text-gray-500 text-sm ml-2" x-text="comment.date"></span>
-                                                </div>
-                                                <div class="text-gray-500 text-sm">
-                                                    <button 
-                                                        @click="comment.isLiked = !comment.isLiked; comment.likes += comment.isLiked ? 1 : -1"
-                                                        class="flex items-center gap-1 hover:text-white transition-colors"
-                                                        :class="{ 'text-film-red': comment.isLiked }"
-                                                    >
-                                                        <i class="fas fa-thumbs-up"></i>
-                                                        <span x-text="comment.likes"></span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <p class="text-gray-300 mt-1" x-text="comment.content"></p>
-                                            <div class="mt-2 text-sm">
-                                                <button class="text-gray-500 hover:text-white transition-colors mr-4">Répondre</button>
-                                                <button class="text-gray-500 hover:text-white transition-colors">Signaler</button>
-                                            </div>
-                                        </div>
+                            <div id="comments-list">
+                                @if(isset($comments) && $comments->count() > 0)
+                                    @foreach($comments as $comment)
+                                        @include('partials.comment', ['comment' => $comment])
+                                    @endforeach
+                                    <!-- Pagination -->
+                                    <div class="mt-6">
+                                        {{ $comments->links() }}
                                     </div>
-                                </div>
-                            </template>
+                                @else
+                                    <div id="no-comments-message" class="text-center py-8 text-gray-400">
+                                        <i class="fas fa-comments text-4xl mb-3 opacity-30"></i>
+                                        <p>Soyez le premier à commenter cet épisode</p>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
-                    
                 </div>
-                
                 <!-- Right column - Episodes list and download options -->
                 <div class="lg:w-1/3">
                     <!-- Episodes panel -->
@@ -603,7 +584,7 @@
                                 Épisodes
                             </h3>
                             <div class="flex items-center gap-2">
-                                <select 
+                                <select
                                     class="bg-[#333] text-white text-sm rounded px-2 py-1 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-film-red" 
                                     onchange="window.location.href=this.value"
                                 >
@@ -618,7 +599,6 @@
                                 </button>
                             </div>
                         </div>
-                        
                         <!-- Download all episodes button -->
                         <div class="p-4 border-b border-[#333]">
                             <button 
@@ -629,7 +609,6 @@
                                 Télécharger tous les épisodes
                             </button>
                         </div>
-                        
                         <!-- Episodes list -->
                         <div x-show="isOpen" class="max-h-[600px] overflow-y-auto">
                             @foreach($seasonEpisodes as $ep)
@@ -661,7 +640,6 @@
                                         </div>
                                     </div>
                                 </a>
-                                
                                 <!-- Episode options overlay -->
                                 <div 
                                     x-show="showOptions"
@@ -696,7 +674,6 @@
                             @endforeach
                         </div>
                     </div>
-                    
                     <!-- Series info card -->
                     <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg mb-6">
                         <div class="p-6">
@@ -704,7 +681,6 @@
                                 <i class="fas fa-info-circle text-film-red mr-2"></i>
                                 Informations sur la série
                             </h3>
-                            
                             <div class="flex flex-wrap gap-2 mb-4">
                                 @if(isset($series->categories) && $series->categories->isNotEmpty())
                                     @foreach($series->categories as $category)
@@ -714,7 +690,6 @@
                                     @endforeach
                                 @endif
                             </div>
-                            
                             <div class="text-gray-300 text-sm space-y-2">
                                 <div class="flex">
                                     <span class="w-24 text-gray-500">Titre:</span>
@@ -744,13 +719,11 @@
                                     </span>
                                 </div>
                             </div>
-                            
                             <div class="mt-4 pt-4 border-t border-[#333]">
                                 <p class="text-gray-300 text-sm leading-relaxed">{{ $series->content->description ?? 'Description non disponible' }}</p>
                             </div>
                         </div>
                     </div>
-                    
                     <!-- Recommended series -->
                     <div class="bg-[#1A1A1A] rounded-xl overflow-hidden shadow-lg">
                         <div class="p-6">
@@ -758,7 +731,6 @@
                                 <i class="fas fa-thumbs-up text-film-red mr-2"></i>
                                 Recommandations
                             </h3>
-                            
                             <div class="space-y-4">
                                 @for ($i = 0; $i < 3; $i++)
                                 <a href="#" class="flex hover:bg-[#242424] p-2 rounded-lg transition-colors">
@@ -790,10 +762,8 @@
             </div>
         </div>
     </main>
-
     <!-- Include Footer -->
     @include('partials.footer')
-
     <!-- Next episode notification -->
     <div 
         x-data="{ show: false }" 
@@ -847,18 +817,35 @@
         </div>
         @endif
     </div>
-
     <script>
+        // Fonction pour vérifier l'authentification avant d'accéder à un épisode
+        function checkAuthBeforeWatch(event, url) {
+            @if(!Auth::check())
+                // L'utilisateur n'est pas connecté, empêcher la navigation normale
+                event.preventDefault();
+                // Enregistrer l'URL dans le localStorage pour redirection après connexion
+                localStorage.setItem('redirectAfterLogin', url);
+                // Rediriger vers la page de connexion
+                window.location.href = "{{ route('login') }}";
+                // Afficher un message à l'utilisateur
+                alert("Vous devez être connecté pour accéder à ce contenu.");
+            @endif
+        }
         document.addEventListener('DOMContentLoaded', function() {
+            // Ajouter les événements de vérification aux liens d'épisodes
+            const episodeLinks = document.querySelectorAll('a[href*="watch.episode"]');
+            episodeLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    checkAuthBeforeWatch(e, this.href);
+                });
+            });
             const video = document.getElementById('videoPlayer');
-            
             // Save watch progress
             if (video) {
                 video.addEventListener('timeupdate', function() {
                     if (video.currentTime > 0) {
                         const progress = (video.currentTime / video.duration) * 100;
                         localStorage.setItem('watchProgress_{{ $episode->id }}', video.currentTime);
-                        
                         // Update progress bar in UI
                         const activeEpisode = document.querySelector('.episode-item.active');
                         if (activeEpisode) {
@@ -869,25 +856,26 @@
                         }
                     }
                 });
-                
                 // Resume playback from saved position
                 const savedTime = localStorage.getItem('watchProgress_{{ $episode->id }}');
                 if (savedTime && savedTime > 0) {
                     video.currentTime = savedTime;
                 }
             }
-            
-            // Auto-hide flash notification
+            // Auto-hide flash notification with logging
             const flashNotification = document.getElementById('flash-notification');
             if (flashNotification) {
+                console.log('Flash notification found, will hide in 3 seconds');
                 setTimeout(() => {
+                    console.log('Hiding flash notification');
                     flashNotification.classList.add('opacity-0');
                     setTimeout(() => {
                         flashNotification.style.display = 'none';
                     }, 500);
                 }, 3000);
+            } else {
+                console.log('No flash notification found');
             }
-            
             // Add shine effect to buttons
             document.querySelectorAll('.bg-film-red').forEach(button => {
                 const shine = document.createElement('div');
@@ -905,8 +893,6 @@
             });
         });
     </script>
-    
-    <!-- Add anime.js for animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@ use App\Models\Episode;
 use App\Models\Season;
 use App\Models\Content;
 use App\Repositories\Interfaces\SeriesRepositoryInterface;
+use App\Services\CommentService;
 use Illuminate\Support\Facades\Log;
 
 class VideoPlayerController extends BaseController
@@ -17,13 +18,20 @@ class VideoPlayerController extends BaseController
     protected $seriesRepository;
 
     /**
+     * @var CommentService
+     */
+    protected $commentService;
+
+    /**
      * VideoPlayerController constructor.
      *
      * @param SeriesRepositoryInterface $seriesRepository
+     * @param CommentService $commentService
      */
-    public function __construct(SeriesRepositoryInterface $seriesRepository)
+    public function __construct(SeriesRepositoryInterface $seriesRepository, CommentService $commentService)
     {
         $this->seriesRepository = $seriesRepository;
+        $this->commentService = $commentService;
     }
 
     /**
@@ -83,13 +91,20 @@ class VideoPlayerController extends BaseController
             // Récupérer les épisodes de la saison courante
             $seasonEpisodes = $this->getSeasonEpisodes($seriesId, $currentSeason);
             
+            // Récupérer les commentaires pour cet épisode
+            $comments = collect([]);
+            if ($episode->content_id) {
+                $comments = $this->commentService->getContentComments($episode->content_id);
+            }
+            
             return view('watch.episode', [
                 'episode' => $episodeData,
                 'series' => $seriesData,
                 'nextEpisode' => $nextEpisode,
                 'seasons' => $seasons,
                 'seasonEpisodes' => $seasonEpisodes,
-                'currentSeason' => $currentSeason
+                'currentSeason' => $currentSeason,
+                'comments' => $comments
             ]);
             
         } catch (\Exception $e) {
@@ -331,5 +346,86 @@ class VideoPlayerController extends BaseController
             'series_id' => $episode->series_id,
             'episode_id' => $episode->id
         ]);
+    }
+
+    /**
+     * Afficher la page de présentation d'une série (accessible sans authentification)
+     * Si l'utilisateur tente de regarder un épisode, il sera redirigé vers la page de connexion
+     *
+     * @param  int  $seriesId
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function showSeries($seriesId)
+    {
+        try {
+            // Convertir l'ID en entier
+            $seriesId = (int)$seriesId;
+            
+            // Récupérer la série avec ses relations
+            $series = $this->seriesRepository->findById($seriesId, ['content', 'seasons.episodes']);
+            
+            if (!$series) {
+                abort(404, 'Série non trouvée');
+            }
+            
+            // Récupérer la première saison
+            $firstSeason = $series->seasons()->first();
+            if (!$firstSeason) {
+                abort(404, 'Aucune saison disponible pour cette série');
+            }
+            
+            // Récupérer les épisodes de la première saison
+            $episodes = Episode::where('series_id', $seriesId)
+                ->where('season_number', $firstSeason->season_number)
+                ->orderBy('episode_number')
+                ->get()
+                ->map(function ($ep) {
+                    return (object)[
+                        'id' => $ep->id,
+                        'title' => $ep->title,
+                        'thumbnail' => $ep->content->cover_image ?? null,
+                        'episode_number' => $ep->episode_number,
+                        'duration' => $ep->content->duration ?? null,
+                        'description' => $ep->content->description ?? null
+                    ];
+                });
+                
+            // Récupérer la liste des saisons pour le sélecteur
+            $seasons = Season::where('series_id', $seriesId)
+                ->orderBy('season_number')
+                ->pluck('season_number')
+                ->unique()
+                ->values()
+                ->all();
+                
+            // Préparer les données de la série
+            $seriesData = (object)[
+                'id' => $series->id,
+                'title' => $series->title,
+                'poster' => $series->content->cover_image ?? null,
+                'release_year' => $series->content->release_year ?? null,
+                'age_rating' => $series->content->maturity_rating ?? null,
+                'description' => $series->content->description ?? null,
+                'seasons_count' => $series->seasons->count(),
+                'total_episodes' => $series->episodes()->count(),
+                'content' => $series->content,
+                'status' => $series->status ?? 'ongoing'
+            ];
+            
+            return view('series.show', [
+                'series' => $seriesData,
+                'episodes' => $episodes,
+                'seasons' => $seasons,
+                'currentSeason' => $firstSeason,
+                'authRequired' => true // Indique que l'authentification est requise pour regarder un épisode
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du chargement de la série: ' . $e->getMessage(), [
+                'seriesId' => $seriesId,
+                'exception' => $e
+            ]);
+            abort(500, 'Une erreur est survenue lors du chargement de la série');
+        }
     }
 }

@@ -4,7 +4,7 @@ services:
     container_name: filmwave-app
     volumes:
       - .:/var/www
-
+      
   web:
     image: nginx:alpine
     container_name: filmwave-nginx

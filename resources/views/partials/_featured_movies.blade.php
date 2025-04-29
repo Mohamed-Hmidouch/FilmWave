@@ -1,9 +1,52 @@
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8"
+     x-data="{ 
+        selectedCategory: 'all',
+        hoverCardId: null,
+        voucherModal: { 
+            show: false, 
+            code: '',
+            title: ''
+        }
+     }">
     <div class="flex items-center justify-between mb-8">
         <h2 class="text-3xl font-bold text-white relative">
             <span class="relative z-10">Séries</span>
             <span class="absolute -bottom-2 left-0 w-1/3 h-1 bg-film-red rounded-full"></span>
         </h2>
+        
+        <!-- Category Filter Tabs -->
+        <div class="hidden md:flex space-x-2 items-center">
+            <span class="text-gray-400 mr-2">Filter:</span>
+            <button 
+                @click="selectedCategory = 'all'" 
+                :class="{'bg-film-red text-white': selectedCategory === 'all', 'bg-film-gray/70 text-gray-300 hover:bg-film-gray/90': selectedCategory !== 'all'}"
+                class="px-3 py-1 rounded-full text-sm transition-colors duration-200"
+            >
+                All
+            </button>
+            <button 
+                @click="selectedCategory = 'action'" 
+                :class="{'bg-film-red text-white': selectedCategory === 'action', 'bg-film-gray/70 text-gray-300 hover:bg-film-gray/90': selectedCategory !== 'action'}"
+                class="px-3 py-1 rounded-full text-sm transition-colors duration-200"
+            >
+                Action
+            </button>
+            <button 
+                @click="selectedCategory = 'drama'" 
+                :class="{'bg-film-red text-white': selectedCategory === 'drama', 'bg-film-gray/70 text-gray-300 hover:bg-film-gray/90': selectedCategory !== 'drama'}"
+                class="px-3 py-1 rounded-full text-sm transition-colors duration-200"
+            >
+                Drama
+            </button>
+            <button 
+                @click="selectedCategory = 'comedy'" 
+                :class="{'bg-film-red text-white': selectedCategory === 'comedy', 'bg-film-gray/70 text-gray-300 hover:bg-film-gray/90': selectedCategory !== 'comedy'}"
+                class="px-3 py-1 rounded-full text-sm transition-colors duration-200"
+            >
+                Comedy
+            </button>
+        </div>
+        
         <a href="" class="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group">
             <span>Voir tout</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -12,17 +55,151 @@
         </a>
     </div>
     
+    <!-- Mobile Category Filter Dropdown -->
+    <div class="md:hidden mb-6">
+        <div x-data="{ open: false }" class="relative">
+            <button 
+                @click="open = !open" 
+                class="w-full flex items-center justify-between bg-film-gray/70 text-white px-4 py-2 rounded-lg"
+            >
+                <span x-text="selectedCategory === 'all' ? 'All Categories' : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" :class="{'rotate-180': open}">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            
+            <div 
+                x-show="open" 
+                @click.away="open = false"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 transform -translate-y-2"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 transform translate-y-0"
+                x-transition:leave-end="opacity-0 transform -translate-y-2"
+                class="absolute z-10 mt-1 w-full bg-film-gray/90 backdrop-blur-sm rounded-lg shadow-lg py-1"
+                style="display: none;"
+            >
+                <button 
+                    @click="selectedCategory = 'all'; open = false" 
+                    class="block w-full text-left px-4 py-2 text-white hover:bg-film-red/20"
+                >
+                    All Categories
+                </button>
+                <button 
+                    @click="selectedCategory = 'action'; open = false" 
+                    class="block w-full text-left px-4 py-2 text-white hover:bg-film-red/20"
+                >
+                    Action
+                </button>
+                <button 
+                    @click="selectedCategory = 'drama'; open = false" 
+                    class="block w-full text-left px-4 py-2 text-white hover:bg-film-red/20"
+                >
+                    Drama
+                </button>
+                <button 
+                    @click="selectedCategory = 'comedy'; open = false" 
+                    class="block w-full text-left px-4 py-2 text-white hover:bg-film-red/20"
+                >
+                    Comedy
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Flash deal banner with voucher code -->
+    <div class="mb-8 p-5 rounded-lg bg-gradient-to-r from-film-dark via-film-gray to-film-dark border border-gray-800 relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-64 h-64 bg-film-red/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-film-red/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-1 bg-film-red text-white text-xs font-bold rounded-full animate-pulse">LIMITED TIME</span>
+                    <div class="h-1 w-1 bg-gray-500 rounded-full"></div>
+                    <span class="text-gray-300 text-sm">Ends in 
+                        <span x-data="{ 
+                            countdown: { hours: 23, minutes: 59, seconds: 59 },
+                            init() {
+                                setInterval(() => {
+                                    this.countdown.seconds--;
+                                    if (this.countdown.seconds < 0) {
+                                        this.countdown.seconds = 59;
+                                        this.countdown.minutes--;
+                                    }
+                                    if (this.countdown.minutes < 0) {
+                                        this.countdown.minutes = 59;
+                                        this.countdown.hours--;
+                                    }
+                                    if (this.countdown.hours < 0) {
+                                        this.countdown = { hours: 23, minutes: 59, seconds: 59 };
+                                    }
+                                }, 1000);
+                            }
+                        }" class="font-mono">
+                            <span x-text="countdown.hours.toString().padStart(2, '0')"></span>:<span x-text="countdown.minutes.toString().padStart(2, '0')"></span>:<span x-text="countdown.seconds.toString().padStart(2, '0')"></span>
+                        </span>
+                    </span>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-white mb-1">Flash Deal: 50% Off Premium</h3>
+                <p class="text-gray-300 mb-4 md:mb-0">Get unlimited access to all premium content with this special offer</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button 
+                    @click="
+                        voucherModal.code = new CouponJS().couponCode({
+                            length: 8,
+                            pattern: '###-###-##'
+                        });
+                        voucherModal.title = 'FLASH50';
+                        voucherModal.show = true;
+                    "
+                    class="bg-film-red hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-lg shadow-film-red/20 flex items-center justify-center gap-2"
+                >
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Get Coupon</span>
+                </button>
+                <a href="#" class="bg-transparent border border-gray-600 hover:border-white text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Movie Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         @forelse ($series as $seriesItem)
             <div 
                 x-data="{ 
                     showDetails: false,
                     isHovered: false,
-                    playAnimation: false
+                    playAnimation: false,
+                    category: '{{ strtolower($seriesItem->content->categories->first()->name ?? 'none') }}',
+                    addToFavorites() {
+                        // Get current favorites from localStorage or initialize empty array
+                        const currentFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+                        
+                        // Add the current item
+                        currentFavorites.push({
+                            id: {{ $seriesItem->id }},
+                            title: '{{ addslashes($seriesItem->content->title ?? 'Unknown') }}',
+                            img: '{{ asset('storage/' . $seriesItem->content->cover_image) }}',
+                            year: '2025'
+                        });
+                        
+                        // Save back to localStorage
+                        localStorage.setItem('favorites', JSON.stringify(currentFavorites));
+                        
+                        // Show notification
+                        $dispatch('notify', {message: 'Added to favorites!', type: 'success'});
+                    }
                 }" 
                 x-init="$nextTick(() => { playAnimation = true })"
-                @mouseenter="isHovered = true" 
-                @mouseleave="isHovered = false"
+                x-show="selectedCategory === 'all' || category.includes(selectedCategory)"
+                @mouseenter="isHovered = true; hoverCardId = {{ $seriesItem->id }}" 
+                @mouseleave="isHovered = false; hoverCardId = null"
                 class="movie-card bg-[#0A0A0A] rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl relative transform hover:-translate-y-1"
                 :class="{ 'ring-2 ring-film-red': isHovered }"
                 x-transition:enter="transition ease-out duration-300"
@@ -126,14 +303,14 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                             </svg>
-                            Regarder
+                            Watch
                         </a>
                         
                         <!-- Add to watchlist button -->
                         <button 
-                            @click="$dispatch('notify', {message: 'Ajouté à votre liste', type: 'success'})"
+                            @click="addToFavorites()"
                             class="bg-[#1A1A1A] hover:bg-[#252525] text-white p-2 rounded-md transition-colors duration-300"
-                            title="Ajouter à ma liste"
+                            title="Add to my list"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -144,7 +321,7 @@
                         <button 
                             @click="showDetails = !showDetails"
                             class="bg-[#1A1A1A] hover:bg-[#252525] text-white p-2 rounded-md transition-colors duration-300"
-                            title="Plus d'informations"
+                            title="More information"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -164,6 +341,7 @@
                     x-transition:leave-end="opacity-0 transform translate-y-4"
                     class="absolute inset-0 bg-black/95 z-10 p-4 overflow-y-auto"
                     @click.away="showDetails = false"
+                    style="display: none;"
                 >
                     <button @click="showDetails = false" class="absolute top-2 right-2 text-gray-400 hover:text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -211,16 +389,49 @@
                         </div>
                     @endif
                     
-                    <a 
-                        href="{{ route('watch.episode', ['seriesId' => $seriesItem->id]) }}"
-                        class="bg-film-red text-white w-full py-2 rounded-md transform transition-all duration-300 hover:bg-red-700 flex items-center justify-center gap-2 text-sm font-medium"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Regarder maintenant
-                    </a>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <a 
+                            href="{{ route('watch.episode', ['seriesId' => $seriesItem->id]) }}"
+                            class="bg-film-red text-white py-2 rounded-md transform transition-all duration-300 hover:bg-red-700 flex items-center justify-center gap-2 text-sm font-medium"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Watch Now
+                        </a>
+                        <button 
+                            @click="addToFavorites(); showDetails = false"
+                            class="bg-transparent border border-gray-600 text-white py-2 rounded-md flex items-center justify-center gap-2 text-sm font-medium hover:border-white transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            Add to Favorites
+                        </button>
+                    </div>
+                    
+                    <!-- Share options -->
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-400 mb-2">Share:</h4>
+                        <div class="flex space-x-3">
+                            <button class="text-gray-400 hover:text-blue-500 transition-colors">
+                                <i class="fab fa-facebook text-lg"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-blue-400 transition-colors">
+                                <i class="fab fa-twitter text-lg"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-pink-500 transition-colors">
+                                <i class="fab fa-instagram text-lg"></i>
+                            </button>
+                            <button 
+                                @click="navigator.clipboard.writeText(window.location.origin + '/watch/series/' + {{ $seriesItem->id }}); $dispatch('notify', {message: 'URL copied to clipboard!', type: 'success'})"
+                                class="text-gray-400 hover:text-green-500 transition-colors"
+                            >
+                                <i class="fas fa-link text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         @empty
@@ -228,87 +439,80 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-700 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h18M3 16h18" />
                 </svg>
-                <p class="text-gray-400 text-lg">Aucune série disponible</p>
-                <p class="text-gray-500 mt-2">Revenez plus tard pour découvrir nos nouvelles séries</p>
+                <p class="text-gray-400 text-lg">No series available</p>
+                <p class="text-gray-500 mt-2">Check back later to discover our new series</p>
             </div>
         @endforelse
     </div>
-</div>
-
-<!-- Notification component with Alpine.js -->
-<div 
-    x-data="{ 
-        show: false, 
-        message: '', 
-        type: 'success',
-        timer: null 
-    }"
-    @notify.window="
-        message = $event.detail.message; 
-        type = $event.detail.type || 'success'; 
-        show = true;
-        clearTimeout(timer);
-        timer = setTimeout(() => { show = false }, 3000);
-    "
-    x-show="show"
-    x-transition:enter="transition ease-out duration-300"
-    x-transition:enter-start="opacity-0 transform translate-y-2"
-    x-transition:enter-end="opacity-100 transform translate-y-0"
-    x-transition:leave="transition ease-in duration-200"
-    x-transition:leave-start="opacity-100 transform translate-y-0"
-    x-transition:leave-end="opacity-0 transform translate-y-2"
-    class="fixed top-5 right-5 z-50 max-w-sm"
->
+        <!-- Voucher Code Modal -->
     <div 
-        class="flex items-center p-4 rounded-lg shadow-lg"
-        :class="{
-            'bg-green-500 text-white': type === 'success',
-            'bg-red-500 text-white': type === 'error',
-            'bg-blue-500 text-white': type === 'info',
-            'bg-yellow-500 text-white': type === 'warning'
-        }"
+        x-show="voucherModal.show" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 transform scale-90"
+        x-transition:enter-end="opacity-100 transform scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-90"
+        class="fixed inset-0 flex items-center justify-center z-50 bg-black/70 backdrop-blur-sm"
+        @click.away="voucherModal.show = false"
+        style="display: none;"
     >
-        <!-- Icon based on type -->
-        <div class="mr-3">
-            <template x-if="type === 'success'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-            </template>
-            <template x-if="type === 'error'">
+        <div class="relative w-full max-w-md">
+            <!-- Close button -->
+            <button @click="voucherModal.show = false" class="absolute -top-4 -right-4 bg-film-gray text-white rounded-full p-2 shadow-lg hover:bg-film-red transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-            </template>
-            <template x-if="type === 'info'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </template>
-            <template x-if="type === 'warning'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </template>
+            </button>
+            
+            <!-- Coupon content -->
+            <div class="bg-gradient-to-br from-film-dark to-film-gray p-1 rounded-xl shadow-2xl">
+                <div class="coupon-clip bg-film-gray p-6 rounded-lg border-4 border-dashed border-film-red flex flex-col items-center">
+                    <div class="mb-4 text-center">
+                        <h2 class="text-2xl font-bold text-white mb-1" x-text="voucherModal.title || 'FLASH50'"></h2>
+                        <p class="text-gray-400">Get 50% off your first month</p>
+                    </div>
+                    
+                    <div class="w-full bg-black/30 py-6 px-4 rounded-lg text-center mb-6">
+                        <p class="text-gray-400 text-sm mb-2">Your promo code</p>
+                        <div class="relative">
+                            <div class="promo-sparkle bg-gradient-to-r from-film-red via-yellow-500 to-film-red text-white font-mono text-xl sm:text-2xl font-bold py-3 rounded tracking-widest">
+                                <span x-text="voucherModal.code">FILM50OFF</span>
+                            </div>
+                            <div class="absolute -top-1 -left-1 w-3 h-3 bg-white rounded-full"></div>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full"></div>
+                            <div class="absolute -bottom-1 -left-1 w-3 h-3 bg-white rounded-full"></div>
+                            <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full"></div>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-2">
+                            Valid until May 15, 2025
+                        </p>
+                    </div>
+                    
+                    <div class="text-center mb-6">
+                        <h3 class="text-xl font-bold text-film-red mb-2">50% OFF</h3>
+                        <p class="text-gray-300">Limited time offer for new subscriptions</p>
+                    </div>
+                    
+                    <div class="w-full grid grid-cols-2 gap-3">
+                        <button 
+                            @click="navigator.clipboard.writeText(voucherModal.code); $dispatch('notify', {message: 'Code copied to clipboard!', type: 'success'})" 
+                            class="bg-film-gray hover:bg-gray-800 text-white py-2 px-4 rounded-lg border border-gray-700 transition-colors"
+                        >
+                            Copy Code
+                        </button>
+                        <button 
+                            @click="voucherModal.show = false; $dispatch('notify', {message: 'Redirecting to checkout!', type: 'info'}); setTimeout(() => window.location.href = '{{ route('subscribe.checkout') }}?code=' + voucherModal.code, 1500)" 
+                            class="bg-film-red hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
+                        >
+                            Use Now
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <!-- Message -->
-        <span x-text="message"></span>
-        
-        <!-- Close button -->
-        <button @click="show = false" class="ml-auto text-white hover:text-gray-200">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
     </div>
 </div>
 
 <!-- Include anime.js library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-
-<!-- Include external CSS and JS files -->
-<link rel="stylesheet" href="{{ asset('css/app.css') }}">
-<link rel="stylesheet" href="{{ asset('css/movies.css') }}">
-<script src="{{ asset('js/movie-cards.js') }}"></script>
-<script src="{{ asset('js/notifications.js') }}"></script>

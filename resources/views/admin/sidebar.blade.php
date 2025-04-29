@@ -22,6 +22,10 @@
                     <i class="fas fa-folder mr-3"></i>
                     Categories
                 </a>
+                <a href="{{ route('admin.comments.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ Request::routeIs('admin.comments.*') ? 'bg-gray-700' : '' }}">
+                    <i class="fas fa-comments mr-3"></i>
+                    Comments
+                </a>
                 <a href="#" class="flex items-center px-4 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white">
                     <i class="fas fa-users mr-3"></i>
                     Users

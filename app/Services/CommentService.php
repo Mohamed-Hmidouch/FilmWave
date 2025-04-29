@@ -60,15 +60,29 @@ class CommentService
     }
 
     /**
+     * Get all comments with pagination for admin view
+     *
+     * @param int $perPage
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getAllComments(int $perPage = 10): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        return Comment::with(['user', 'content'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
      * Delete a comment
      *
      * @param int $commentId
      * @param int $userId
+     * @param bool $isAdmin Whether the request is from an admin (bypasses user check)
      * @return bool
      */
-    public function delete(int $commentId, int $userId): bool
+    public function delete(int $commentId, int $userId, bool $isAdmin = false): bool
     {
-        Log::info('Deleting comment', ['comment_id' => $commentId, 'user_id' => $userId]);
+        Log::info('Deleting comment', ['comment_id' => $commentId, 'user_id' => $userId, 'is_admin' => $isAdmin]);
         
         $comment = Comment::find($commentId);
         
@@ -77,7 +91,7 @@ class CommentService
             return false;
         }
         
-        if ($comment->user_id !== $userId) {
+        if (!$isAdmin && $comment->user_id !== $userId) {
             Log::warning('Unauthorized comment deletion attempt', [
                 'comment_id' => $commentId, 
                 'comment_user_id' => $comment->user_id,

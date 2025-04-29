@@ -96,9 +96,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('categories/export', [CategorieController::class, 'export'])->name('categories.export');
     
     // Actor management
-    // Route::resource('actors', ActorController::class);
-    
-
+    Route::get('comments', [App\Http\Controllers\Admin\CommentController::class, 'index'])->name('comments.index');
+    Route::delete('comments/{id}', [App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('comments.destroy');
+    Route::delete('users/{id}', [App\Http\Controllers\Admin\CommentController::class, 'destroyUser'])->name('users.destroy');
 });
 
 

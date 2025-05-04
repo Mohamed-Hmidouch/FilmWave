@@ -15,10 +15,11 @@ class UserController extends Controller
         $this->seriesService = $seriesService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $series = $this->seriesService->getAllSeries();
+            // Utiliser la pagination avec 10 éléments par page
+            $series = $this->seriesService->getPaginatedSeries(10);
             return view('user.homme', [
                 'series' => $series
             ]);

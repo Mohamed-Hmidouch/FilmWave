@@ -118,6 +118,66 @@
         <!-- Main content area with dark background -->
         <div class="w-full py-6 bg-[#121212]">
             @include('partials._featured_movies')
+            
+            <!-- Pagination Links - Nouvelle version avec Tailwind CSS -->
+            <div class="flex flex-col items-center my-8 space-y-4" aria-label="Pagination">
+                <!-- Compteurs de résultats -->
+                @if($series->total() > 0)
+                <div class="text-sm text-film-light">
+                    <span>Showing {{ $series->firstItem() }} to {{ $series->lastItem() }} of {{ $series->total() }} results</span>
+                </div>
+                @endif
+                
+                <!-- Contrôleurs de pagination -->
+                <div class="inline-flex shadow-xl rounded-md bg-film-dark">
+                    <!-- Bouton Précédent -->
+                    @if($series->onFirstPage())
+                        <span class="px-4 py-2.5 text-gray-500 bg-film-gray rounded-l-md border-r border-neutral-700 cursor-not-allowed" aria-disabled="true">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </span>
+                    @else
+                        <a href="{{ $series->previousPageUrl() }}" 
+                           class="px-4 py-2.5 text-film-light bg-film-gray hover:bg-neutral-700 rounded-l-md border-r border-neutral-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-film-red focus:ring-opacity-50"
+                           aria-label="Page précédente">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </a>
+                    @endif
+                    
+                    <!-- Pages numériques -->
+                    @foreach($series->getUrlRange(1, $series->lastPage()) as $page => $url)
+                        <a href="{{ $url }}" 
+                           class="{{ $page == $series->currentPage() 
+                               ? 'bg-film-red text-white font-medium' 
+                               : 'bg-film-gray text-film-light hover:bg-neutral-700' }} 
+                               px-4 py-2.5 text-sm border-r border-neutral-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-film-red focus:ring-opacity-50"
+                           aria-label="Page {{ $page }}"
+                           aria-current="{{ $page == $series->currentPage() ? 'page' : 'false' }}">
+                            {{ $page }}
+                        </a>
+                    @endforeach
+                    
+                    <!-- Bouton Suivant -->
+                    @if($series->hasMorePages())
+                        <a href="{{ $series->nextPageUrl() }}" 
+                           class="px-4 py-2.5 text-film-light bg-film-gray hover:bg-neutral-700 rounded-r-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-film-red focus:ring-opacity-50"
+                           aria-label="Page suivante">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    @else
+                        <span class="px-4 py-2.5 text-gray-500 bg-film-gray rounded-r-md cursor-not-allowed" aria-disabled="true">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </span>
+                    @endif
+                </div>
+            </div>
         </div>
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
     </div>
@@ -261,63 +321,6 @@
     
     @include('partials.scripts')
 
-    <!-- Script pour faire disparaître le message flash après 3 secondes -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const flashNotification = document.getElementById('flash-notification');
-            if (flashNotification) {
-                setTimeout(function() {
-                    flashNotification.classList.remove('opacity-100');
-                    flashNotification.classList.add('opacity-0');
-                    setTimeout(function() {
-                        flashNotification.style.display = 'none';
-                    }, 500);
-                }, 3000);
-            }
-            
-            // Generate promo code using voucher-code-generator
-            const promoCode = voucher_codes.generate({
-                length: 8,
-                count: 1,
-                charset: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            })[0];
-            
-            // Set expiry date (30 days from now)
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 30);
-            const formattedDate = expiryDate.toLocaleDateString('fr-FR', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            
-            // Initialize Alpine.js data
-            window.Alpine.store('promo', {
-                code: promoCode,
-                expiry: formattedDate
-            });
-            
-            // Show promo popup after 5 seconds if not already redeemed
-            if (localStorage.getItem('hasRedeemedPromo') !== 'true') {
-                setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent('show-promo'));
-                }, 5000);
-            }
-        });
-        
-        // Initialize Alpine.js data
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('promoHandler', () => ({
-                init() {
-                    window.addEventListener('show-promo', () => {
-                        this.showPromoPopup = true;
-                        this.promoCode = Alpine.store('promo').code;
-                        this.promoExpiry = Alpine.store('promo').expiry;
-                    });
-                }
-            }));
-        });
-    </script>
 </body>
 </html>
 

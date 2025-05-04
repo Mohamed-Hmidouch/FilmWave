@@ -1,9 +1,7 @@
 FROM php:8.2-fpm
 WORKDIR /var/www
 
-
-
-# Linux Library
+# Combinez toutes les installations en une seule commande
 RUN apt-get update -y && apt-get install -y \
     libicu-dev \
     libmariadb-dev \
@@ -13,17 +11,14 @@ RUN apt-get update -y && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
-    libpng-dev \
     libzip-dev \
     libonig-dev \
     libxml2-dev \
-    curl
-
-
-    # Ajouter à votre Dockerfile:
-RUN apt-get update && apt-get install -y \
-nodejs \
-npm
+    curl \
+    nodejs \
+    npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* 
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -43,7 +38,7 @@ RUN docker-php-ext-install \
     exif \
     pcntl
 
-# Configuration PHP pour les uploads volumineux
+# Configuration PHP
 RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 100M" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini \

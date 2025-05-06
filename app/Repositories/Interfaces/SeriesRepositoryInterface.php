@@ -26,4 +26,6 @@ interface SeriesRepositoryInterface
     // Sorting/filtering methods
     public function getPopular(int $limit): Collection;
     public function getRecent(int $limit): Collection;
+
+    public function downloadEpisode(int $seriesId);
 }

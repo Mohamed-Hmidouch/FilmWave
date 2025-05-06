@@ -27,6 +27,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Audio for alert sound -->
     <audio id="alertSound" src="https://www.soundjay.com/buttons/sounds/button-4.mp3" preload="auto"></audio>
+    <!-- Custom JavaScript for admin comments -->
+    <script src="{{ asset('js/admin-comments.js') }}"></script>
 </head>
 <body class="bg-white text-gray-800 min-h-screen flex">
     <!-- Include the admin sidebar -->
@@ -81,62 +83,7 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white rounded-lg p-6 shadow-md border border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm">Total Comments</p>
-                            <h3 class="text-2xl font-bold mt-1">1,254</h3>
-                        </div>
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-500">
-                            <i class="fas fa-comments text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center text-sm">
-                        <span class="text-green-500 flex items-center">
-                            <i class="fas fa-arrow-up mr-1"></i> 12%
-                        </span>
-                        <span class="text-gray-500 ml-2">from last month</span>
-                    </div>
-                </div>
 
-                <div class="bg-white rounded-lg p-6 shadow-md border border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm">Flagged Comments</p>
-                            <h3 class="text-2xl font-bold mt-1">24</h3>
-                        </div>
-                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center text-yellow-500">
-                            <i class="fas fa-flag text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center text-sm">
-                        <span class="text-red-500 flex items-center">
-                            <i class="fas fa-arrow-up mr-1"></i> 8%
-                        </span>
-                        <span class="text-gray-500 ml-2">from last month</span>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg p-6 shadow-md border border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm">Deleted Comments</p>
-                            <h3 class="text-2xl font-bold mt-1">85</h3>
-                        </div>
-                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center text-red-500">
-                            <i class="fas fa-trash-alt text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center text-sm">
-                        <span class="text-green-500 flex items-center">
-                            <i class="fas fa-arrow-down mr-1"></i> 5%
-                        </span>
-                        <span class="text-gray-500 ml-2">from last month</span>
-                    </div>
-                </div>
-            </div>
 
             <!-- Comments List -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">

@@ -67,8 +67,7 @@ Route::middleware(['auth', 'role:PremiumUser,FreeUser'])->group(function () {
         ->where('movieId', '[0-9]+');
     
     // Routes pour le téléchargement de vidéos
-    Route::get('/download/series/{seriesId}/{episodeId}', [VideoPlayerController::class, 'downloadEpisode'])->name('download.episode');
-    Route::get('/download/movie/{movieId}', [VideoPlayerController::class, 'downloadMovie'])->name('download.movie');
+    Route::get('/download/series/{seriesId}/{episodeId}', action: [VideoPlayerController::class, 'downloadEpisode'])->name('download.episode');
 });
 
 

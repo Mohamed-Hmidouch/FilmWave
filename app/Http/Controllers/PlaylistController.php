@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Playlist;
 use App\Models\Content;
 use App\Models\Episode;
+use App\Repositories\PlaylistRepository;
+use App\Requests\User\PlaylistValidator;
+use App\Requests\User\PlaylistContentValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -13,11 +16,29 @@ use Illuminate\Support\Facades\Log;
 class PlaylistController extends BaseController
 {
     /**
+     * Le repository pour la gestion des playlists
+     * 
+     * @var PlaylistRepository
+     */
+    protected $playlistRepository;
+
+    /**
+     * Constructeur du contrôleur
+     * 
+     * @param PlaylistRepository $playlistRepository
+     */
+    public function __construct(PlaylistRepository $playlistRepository)
+    {
+        parent::__construct();
+        $this->playlistRepository = $playlistRepository;
+    }
+
+    /**
      * Afficher toutes les playlists de l'utilisateur
      */
     public function index(Request $request)
     {
-        $playlists = Auth::user()->playlists()->with('contents')->get();
+        $playlists = $this->playlistRepository->getUserPlaylists(Auth::id());
         
         if ($request->ajax()) {
             return response()->json([
@@ -42,17 +63,9 @@ class PlaylistController extends BaseController
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_public' => 'boolean'
-        ]);
+        $validator = new PlaylistValidator($request);
         
-        $playlist = Auth::user()->playlists()->create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'is_public' => $request->is_public ?? false
-        ]);
+        $playlist = $this->playlistRepository->create($request->all(), Auth::id());
         
         if ($request->ajax()) {
             return response()->json([
@@ -72,12 +85,12 @@ class PlaylistController extends BaseController
     public function show(Playlist $playlist)
     {
         // Vérifier si l'utilisateur peut voir cette playlist
-        if ($playlist->user_id !== Auth::id() && !$playlist->is_public) {
+        if (!$this->playlistRepository->canView($playlist, Auth::id())) {
             return redirect()->route('playlists.index')
                              ->with('error', 'Vous n\'êtes pas autorisé à voir cette playlist');
         }
         
-        $playlist->load('contents');
+        $this->playlistRepository->loadContents($playlist);
         
         return $this->view('playlists.show', compact('playlist'));
     }
@@ -88,7 +101,7 @@ class PlaylistController extends BaseController
     public function edit(Playlist $playlist)
     {
         // Vérifier si l'utilisateur est le propriétaire
-        if ($playlist->user_id !== Auth::id()) {
+        if (!$this->playlistRepository->isOwner($playlist, Auth::id())) {
             return redirect()->route('playlists.index')
                              ->with('error', 'Vous n\'êtes pas autorisé à modifier cette playlist');
         }
@@ -102,7 +115,7 @@ class PlaylistController extends BaseController
     public function update(Request $request, Playlist $playlist)
     {
         // Vérifier si l'utilisateur est le propriétaire
-        if ($playlist->user_id !== Auth::id()) {
+        if (!$this->playlistRepository->isOwner($playlist, Auth::id())) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -114,17 +127,9 @@ class PlaylistController extends BaseController
                              ->with('error', 'Vous n\'êtes pas autorisé à modifier cette playlist');
         }
         
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_public' => 'boolean'
-        ]);
+        $validator = new PlaylistValidator($request);
         
-        $playlist->update([
-            'name' => $request->name,
-            'description' => $request->description,
-            'is_public' => $request->is_public ?? false
-        ]);
+        $this->playlistRepository->update($playlist, $request->all());
         
         if ($request->ajax()) {
             return response()->json([
@@ -144,7 +149,7 @@ class PlaylistController extends BaseController
     public function destroy(Request $request, Playlist $playlist)
     {
         // Vérifier si l'utilisateur est le propriétaire
-        if ($playlist->user_id !== Auth::id()) {
+        if (!$this->playlistRepository->isOwner($playlist, Auth::id())) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -156,7 +161,7 @@ class PlaylistController extends BaseController
                              ->with('error', 'Vous n\'êtes pas autorisé à supprimer cette playlist');
         }
         
-        $playlist->delete();
+        $this->playlistRepository->delete($playlist);
         
         if ($request->ajax()) {
             return response()->json([
@@ -170,7 +175,7 @@ class PlaylistController extends BaseController
     }
     
     /**
-     * Ajouter un épisode à une playlist
+     * Ajouter un contenu à une playlist
      */
     public function addToPlaylist(Request $request)
     {
@@ -179,36 +184,20 @@ class PlaylistController extends BaseController
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Seuls les utilisateurs premium peuvent ajouter des épisodes à leurs playlists'
+                    'message' => 'Seuls les utilisateurs premium peuvent ajouter des contenus à leurs playlists'
                 ], 403);
             }
             
             return redirect()->back()
-                             ->with('error', 'Seuls les utilisateurs premium peuvent ajouter des épisodes à leurs playlists');
+                             ->with('error', 'Seuls les utilisateurs premium peuvent ajouter des contenus à leurs playlists');
         }
         
-        $request->validate([
-            'playlist_id' => 'required|exists:playlists,id',
-            'content_id' => 'required|exists:contents,id'
-        ]);
+        $validator = new PlaylistContentValidator($request);
         
-        $playlist = Playlist::find($request->playlist_id);
-        
-        // Vérifier si l'utilisateur est le propriétaire de la playlist
-        if ($playlist->user_id !== Auth::id()) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous n\'êtes pas autorisé à modifier cette playlist'
-                ], 403);
-            }
-            
-            return redirect()->back()
-                             ->with('error', 'Vous n\'êtes pas autorisé à modifier cette playlist');
-        }
+        $playlist = $this->playlistRepository->findById($request->playlist_id);
         
         // Vérifier si le contenu existe déjà dans la playlist
-        if ($playlist->contents()->where('content_id', $request->content_id)->exists()) {
+        if ($this->playlistRepository->hasContent($playlist, $request->content_id)) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -221,7 +210,7 @@ class PlaylistController extends BaseController
         }
         
         // Ajouter le contenu à la playlist
-        $playlist->addContent($request->content_id);
+        $this->playlistRepository->addContent($playlist, $request->content_id);
         
         if ($request->ajax()) {
             return response()->json([
@@ -235,32 +224,16 @@ class PlaylistController extends BaseController
     }
     
     /**
-     * Retirer un épisode d'une playlist
+     * Retirer un contenu d'une playlist
      */
     public function removeFromPlaylist(Request $request)
     {
-        $request->validate([
-            'playlist_id' => 'required|exists:playlists,id',
-            'content_id' => 'required|exists:contents,id'
-        ]);
+        $validator = new PlaylistContentValidator($request);
         
-        $playlist = Playlist::find($request->playlist_id);
-        
-        // Vérifier si l'utilisateur est le propriétaire de la playlist
-        if ($playlist->user_id !== Auth::id()) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous n\'êtes pas autorisé à modifier cette playlist'
-                ], 403);
-            }
-            
-            return redirect()->back()
-                             ->with('error', 'Vous n\'êtes pas autorisé à modifier cette playlist');
-        }
+        $playlist = $this->playlistRepository->findById($request->playlist_id);
         
         // Retirer le contenu de la playlist
-        $playlist->removeContent($request->content_id);
+        $this->playlistRepository->removeContent($playlist, $request->content_id);
         
         if ($request->ajax()) {
             return response()->json([
@@ -272,4 +245,46 @@ class PlaylistController extends BaseController
         return redirect()->back()
                          ->with('success', 'Contenu retiré de votre playlist avec succès');
     }
-} 
+    
+    /**
+     * Ajouter rapidement un contenu à la liste "Ma Liste"
+     */
+    public function toggleMyList(Request $request)
+    {
+        // Vérifier si l'utilisateur peut ajouter à une playlist (premium uniquement)
+        if (Gate::denies('add-to-playlist')) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Seuls les utilisateurs premium peuvent utiliser Ma Liste',
+                    'action' => 'error'
+                ], 403);
+            }
+            
+            return redirect()->back()
+                             ->with('error', 'Seuls les utilisateurs premium peuvent utiliser Ma Liste');
+        }
+        
+        $request->validate([
+            'content_id' => 'required|exists:contents,id'
+        ]);
+        
+        $result = $this->playlistRepository->toggleInMyList(Auth::id(), $request->content_id);
+        
+        if ($request->ajax()) {
+            return response()->json($result);
+        }
+        
+        return redirect()->back()->with('success', $result['message']);
+    }
+    
+    /**
+     * Afficher la liste "Ma Liste" de l'utilisateur
+     */
+    public function myList()
+    {
+        $myList = $this->playlistRepository->getMyListWithContents(Auth::id());
+        
+        return $this->view('playlists.my-list', ['playlist' => $myList]);
+    }
+}

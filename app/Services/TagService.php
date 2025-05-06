@@ -10,59 +10,28 @@ use Illuminate\Support\Facades\Log;
 
 class TagService
 {
-    /**
-     * @var TagRepositoryInterface
-     */
     private $tagRepository;
     
-    /**
-     * TagService constructor.
-     *
-     * @param TagRepositoryInterface $tagRepository
-     */
     public function __construct(TagRepositoryInterface $tagRepository)
     {
         $this->tagRepository = $tagRepository;
     }
 
-    /**
-     * Get all tags
-     *
-     * @return Collection
-     */
     public function getAllTags(): Collection
     {
         return $this->tagRepository->getAll();
     }
 
-    /**
-     * Get paginated tags
-     *
-     * @param int $perPage
-     * @return LengthAwarePaginator
-     */
     public function getPaginatedTags(int $perPage = 10): LengthAwarePaginator
     {
         return $this->tagRepository->getPaginated($perPage);
     }
 
-    /**
-     * Find tag by ID
-     *
-     * @param int $id
-     * @return Tag|null
-     */
     public function findTagById(int $id): ?Tag
     {
         return $this->tagRepository->findById($id);
     }
 
-    /**
-     * Create a new tag
-     *
-     * @param array $data
-     * @return Tag
-     */
     public function createTag(array $data): Tag
     {
         try {
@@ -73,13 +42,6 @@ class TagService
         }
     }
 
-    /**
-     * Update tag
-     *
-     * @param int $id
-     * @param array $data
-     * @return Tag|null
-     */
     public function updateTag(int $id, array $data): ?Tag
     {
         try {
@@ -90,12 +52,6 @@ class TagService
         }
     }
 
-    /**
-     * Delete tag
-     *
-     * @param int $id
-     * @return bool
-     */
     public function deleteTag(int $id): bool
     {
         try {
@@ -106,13 +62,8 @@ class TagService
         }
     }
 
-    /**
-     * Get tags with their content usage count
-     *
-     * @return Collection
-     */
     public function getTagsWithContentCount(): Collection
     {
         return $this->tagRepository->getTagsWithContentCount();
     }
-} 
+}

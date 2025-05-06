@@ -269,8 +269,5 @@
         @include('partials.footer')
     @endif
 
-    <script>
-        // Additional JavaScript functionality can be added here
-    </script>
 </body>
 </html>

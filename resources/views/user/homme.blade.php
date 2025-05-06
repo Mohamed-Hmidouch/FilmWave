@@ -16,6 +16,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <!-- Google Fonts -->
         <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+        <!-- Custom JS for Navbar Search -->
+        <script src="{{ asset('js/navbar-search.js') }}"></script>
         <script>
             tailwind.config = {
                 theme: {
@@ -122,22 +124,26 @@
             <!-- Pagination Links - Nouvelle version avec Tailwind CSS -->
             <div class="flex flex-col items-center my-8 space-y-4" aria-label="Pagination">
                 <!-- Compteurs de résultats -->
-                @if($series->total() > 0)
+                @if($series->count() > 0)
                 <div class="text-sm text-film-light">
-                    <span>Showing {{ $series->firstItem() }} to {{ $series->lastItem() }} of {{ $series->total() }} results</span>
+                    @if(method_exists($series, 'hasPages'))
+                        <span>Showing {{ $series->firstItem() }} to {{ $series->lastItem() }} of {{ $series->total() }} results</span>
+                    @else
+                        <span>Showing {{ count($series) }} result(s)</span>
+                    @endif
                 </div>
                 @endif
                 
                 <!-- Contrôleurs de pagination -->
                 <div class="inline-flex shadow-xl rounded-md bg-film-dark">
                     <!-- Bouton Précédent -->
-                    @if($series->onFirstPage())
+                    @if(method_exists($series, 'onFirstPage') && $series->onFirstPage())
                         <span class="px-4 py-2.5 text-gray-500 bg-film-gray rounded-l-md border-r border-neutral-700 cursor-not-allowed" aria-disabled="true">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
                         </span>
-                    @else
+                    @elseif(method_exists($series, 'previousPageUrl'))
                         <a href="{{ $series->previousPageUrl() }}" 
                            class="px-4 py-2.5 text-film-light bg-film-gray hover:bg-neutral-700 rounded-l-md border-r border-neutral-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-film-red focus:ring-opacity-50"
                            aria-label="Page précédente">
@@ -148,20 +154,22 @@
                     @endif
                     
                     <!-- Pages numériques -->
-                    @foreach($series->getUrlRange(1, $series->lastPage()) as $page => $url)
-                        <a href="{{ $url }}" 
-                           class="{{ $page == $series->currentPage() 
-                               ? 'bg-film-red text-white font-medium' 
-                               : 'bg-film-gray text-film-light hover:bg-neutral-700' }} 
-                               px-4 py-2.5 text-sm border-r border-neutral-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-film-red focus:ring-opacity-50"
-                           aria-label="Page {{ $page }}"
-                           aria-current="{{ $page == $series->currentPage() ? 'page' : 'false' }}">
-                            {{ $page }}
-                        </a>
-                    @endforeach
+                    @if(method_exists($series, 'getUrlRange') && method_exists($series, 'lastPage'))
+                        @foreach($series->getUrlRange(1, $series->lastPage()) as $page => $url)
+                            <a href="{{ $url }}" 
+                               class="{{ $page == $series->currentPage() 
+                                   ? 'bg-film-red text-white font-medium' 
+                                   : 'bg-film-gray text-film-light hover:bg-neutral-700' }} 
+                                   px-4 py-2.5 text-sm border-r border-neutral-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-film-red focus:ring-opacity-50"
+                               aria-label="Page {{ $page }}"
+                               aria-current="{{ $page == $series->currentPage() ? 'page' : 'false' }}">
+                                {{ $page }}
+                            </a>
+                        @endforeach
+                    @endif
                     
                     <!-- Bouton Suivant -->
-                    @if($series->hasMorePages())
+                    @if(method_exists($series, 'hasMorePages') && $series->hasMorePages())
                         <a href="{{ $series->nextPageUrl() }}" 
                            class="px-4 py-2.5 text-film-light bg-film-gray hover:bg-neutral-700 rounded-r-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-film-red focus:ring-opacity-50"
                            aria-label="Page suivante">
@@ -169,7 +177,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </a>
-                    @else
+                    @elseif(method_exists($series, 'hasMorePages'))
                         <span class="px-4 py-2.5 text-gray-500 bg-film-gray rounded-r-md cursor-not-allowed" aria-disabled="true">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>

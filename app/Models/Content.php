@@ -25,10 +25,7 @@ class Content extends Model
         return $this->hasOne(Series::class);
     }
 
-    public function tvShow()
-    {
-        return $this->hasOne(TVShow::class);
-    }
+
 
     public function comments()
     {

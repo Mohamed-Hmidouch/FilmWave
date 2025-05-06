@@ -17,8 +17,7 @@
                         <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
                     </svg>
                 </div>
-                <span class="ml-2 text-film-red font-bold text-2xl md:text-3xl tracking-tighter group-hover:tracking-tight transition-all duration-300">FilmWave</span>
-            </a>
+                <img src="{{ asset('images/image.png') }}" alt="FilmWave Logo" class="h-10">            </a>
             
             <!-- Mobile menu button -->
             <button 
@@ -36,11 +35,8 @@
             
             <!-- Main Navigation Links (Desktop) -->
             <div class="hidden lg:flex space-x-6">
-                <a href="#" class="text-white hover:text-film-red transition flex items-center gap-1">
+                <a href="{{ route('home') }}" class="text-white hover:text-film-red transition flex items-center gap-1">
                     <i class="fas fa-home"></i> <span>Accueil</span>
-                </a>
-                <a href="#" class="text-white hover:text-film-red transition flex items-center gap-1">
-                    <i class="fas fa-film"></i> <span>Films</span>
                 </a>
                 <a href="#" class="text-white hover:text-film-red transition flex items-center gap-1">
                     <i class="fas fa-dragon"></i> <span>Anime</span>
@@ -126,6 +122,7 @@
     
     <!-- Expanded Search bar (appears when toggled) -->
     <div 
+        id="searchContainer"
         x-show="showSearchBar" 
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 transform -translate-y-4"
@@ -138,39 +135,47 @@
     >
         <div class="container mx-auto">
             <div class="relative">
-                <input 
-                    type="text" 
-                    placeholder="Rechercher films, séries, acteurs..." 
-                    x-model="searchQuery"
-                    @keydown.escape="showSearchBar = false"
-                    class="w-full bg-black/50 text-white px-4 py-3 pr-10 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-film-red"
-                    autofocus
-                >
-                <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-film-red">
-                    <i class="fas fa-search"></i>
-                </button>
+                <form id="navSearchForm">
+                    <input 
+                        id="navSearchInput"
+                        type="text" 
+                        placeholder="Rechercher films, séries, acteurs..." 
+                        x-model="searchQuery"
+                        @keydown.escape="showSearchBar = false"
+                        class="w-full bg-black/50 text-white px-4 py-3 pr-10 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-film-red"
+                        autofocus
+                    >
+                    <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-film-red">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
             </div>
             
             <!-- Quick suggestions -->
-            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2" x-show="searchQuery.length > 0">
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2" x-show="searchQuery.length == 0">
                 <div class="p-2 bg-black/30 rounded text-center hover:bg-film-red/20 cursor-pointer transition">
-                    <span class="text-sm">Films d'action</span>
+                    <span class="text-sm text-white">Films d'action</span>
                 </div>
                 <div class="p-2 bg-black/30 rounded text-center hover:bg-film-red/20 cursor-pointer transition">
-                    <span class="text-sm">Séries populaires</span>
+                    <span class="text-sm text-white">Séries populaires</span>
                 </div>
                 <div class="p-2 bg-black/30 rounded text-center hover:bg-film-red/20 cursor-pointer transition">
-                    <span class="text-sm">Nouveautés</span>
+                    <span class="text-sm text-white">Nouveautés</span>
                 </div>
                 <div class="p-2 bg-black/30 rounded text-center hover:bg-film-red/20 cursor-pointer transition">
-                    <span class="text-sm">Anime</span>
+                    <span class="text-sm text-white">Anime</span>
                 </div>
                 <div class="p-2 bg-black/30 rounded text-center hover:bg-film-red/20 cursor-pointer transition">
-                    <span class="text-sm">Dessins animés</span>
+                    <span class="text-sm text-white">Dessins animés</span>
                 </div>
                 <div class="p-2 bg-black/30 rounded text-center hover:bg-film-red/20 cursor-pointer transition">
-                    <span class="text-sm">Science-fiction</span>
+                    <span class="text-sm text-white">Science-fiction</span>
                 </div>
+            </div>
+            
+            <!-- Search Results Container -->
+            <div id="search-results" class="mt-3 bg-film-gray/80 rounded-lg shadow-md max-h-[70vh] overflow-y-auto" x-show="searchQuery.length > 1">
+                <!-- Results will be populated by JavaScript -->
             </div>
         </div>
     </div>

@@ -11,12 +11,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class CommentService
 {
-    /**
-     * Create a new comment
-     *
-     * @param array $data
-     * @return Comment
-     */
     public function create(array $data): Comment
     {
         Log::info('Creating comment', ['content_id' => $data['content_id'], 'user_id' => Auth::id()]);
@@ -42,13 +36,6 @@ class CommentService
         }
     }
 
-    /**
-     * Get comments for a specific content
-     *
-     * @param int $contentId
-     * @param int $perPage
-     * @return LengthAwarePaginator
-     */
     public function getContentComments(int $contentId, int $perPage = 10): LengthAwarePaginator
     {
         Log::info('Getting comments for content', ['content_id' => $contentId, 'per_page' => $perPage]);
@@ -59,12 +46,6 @@ class CommentService
             ->paginate($perPage);
     }
 
-    /**
-     * Get all comments with pagination for admin view
-     *
-     * @param int $perPage
-     * @return \Illuminate\Pagination\LengthAwarePaginator
-     */
     public function getAllComments(int $perPage = 10): \Illuminate\Pagination\LengthAwarePaginator
     {
         return Comment::with(['user', 'content'])
@@ -72,14 +53,6 @@ class CommentService
             ->paginate($perPage);
     }
 
-    /**
-     * Delete a comment
-     *
-     * @param int $commentId
-     * @param int $userId
-     * @param bool $isAdmin Whether the request is from an admin (bypasses user check)
-     * @return bool
-     */
     public function delete(int $commentId, int $userId, bool $isAdmin = false): bool
     {
         Log::info('Deleting comment', ['comment_id' => $commentId, 'user_id' => $userId, 'is_admin' => $isAdmin]);
@@ -106,14 +79,6 @@ class CommentService
         return $result;
     }
 
-    /**
-     * Update a comment
-     *
-     * @param int $commentId
-     * @param string $body
-     * @param int $userId
-     * @return Comment|bool
-     */
     public function update(int $commentId, string $body, int $userId): Comment|bool
     {
         Log::info('Updating comment', ['comment_id' => $commentId, 'user_id' => $userId]);
